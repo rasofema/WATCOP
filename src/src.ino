@@ -5,7 +5,11 @@
 #include <PubSubClient.h>
 #include <Arduino_MKRENV.h>
 
-const int json_size = 1000;
+const int JSON_SIZE = 1000;
+const int HEATER_PIN = 0;
+const int MIC_PIN = A0;
+const int BUZZER_PIN = A1;
+const int WATER_LEVEL_PIN = A2;
 
 // Add WiFi connection information
 char ssid[] = SECRET_SSID;     //  your network SSID (name)
@@ -21,10 +25,10 @@ WiFiClient wifiClient;
 PubSubClient mqtt(MQTT_HOST, MQTT_PORT, callback, wifiClient);
 
 // variables to hold data
-StaticJsonDocument<json_size> jsonDoc;
+StaticJsonDocument<JSON_SIZE> jsonDoc;
 JsonObject payload = jsonDoc.to<JsonObject>();
 JsonObject status = payload.createNestedObject("d");
-static char msg[json_size];
+static char msg[JSON_SIZE];
 
 void callback(char* topic, byte* payload, unsigned int length) {
   // handle message arrived
@@ -40,6 +44,10 @@ void callback(char* topic, byte* payload, unsigned int length) {
 
 
 void setup() {
+  pinMode(HEATER_PIN,OUTPUT);
+  pinMode(MIC_PIN,INPUT);
+  pinMode(BUZZER_PIN,OUTPUT);
+  
   //Initialize serial and wait for port to open:
   Serial.begin(9600);
   while (!Serial) {
@@ -93,21 +101,25 @@ void loop() {
     }
   }
   float temp = ENV.readTemperature();
-  float hum = ENV.readHumidity();
+  float humi = ENV.readHumidity();
   float illu = ENV.readIlluminance();
+  int sound = analogRead(MIC_PIN);
+  float water = analogRead(WATER_LEVEL_PIN);
 
   // Check if any reads failed and exit early (to try again).
-  if (isnan(temp) || isnan(hum) || isnan(illu)) {
+  if (isnan(temp) || isnan(humi) || isnan(illu)) {
     Serial.println("Failed to read data!");
   } else {
 
     // Send data to Watson IoT Platform
     status["temp"] = temp;
-    status["hum"] = hum;
+    status["humi"] = humi;
     status["illu"] = illu;
+    status["sound"] = sound;
+    status["water"] = water;
 
 
-    serializeJson(jsonDoc, msg, json_size);
+    serializeJson(jsonDoc, msg, JSON_SIZE);
 
     Serial.println(msg);
     if (!mqtt.publish(MQTT_TOPIC, msg)) {
