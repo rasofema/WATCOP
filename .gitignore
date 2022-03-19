@@ -2,6 +2,8 @@
 # Created by https://www.toptal.com/developers/gitignore/api/c,c++,visualstudiocode,macos,vim
 # Edit at https://www.toptal.com/developers/gitignore?templates=c,c++,visualstudiocode,macos,vim
 
+src/arduino_secrets.h
+
 ### C ###
 # Prerequisites
 *.d
