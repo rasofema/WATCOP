@@ -5,7 +5,7 @@
 #include <PubSubClient.h>
 #include <Arduino_MKRENV.h>
 
-const int json_size = 1000
+const int json_size = 1000;
 
 // Add WiFi connection information
 char ssid[] = SECRET_SSID;     //  your network SSID (name)
@@ -105,6 +105,10 @@ void loop() {
     status["temp"] = temp;
     status["hum"] = hum;
     status["illu"] = illu;
+
+
+    serializeJson(jsonDoc, msg, json_size);
+
     Serial.println(msg);
     if (!mqtt.publish(MQTT_TOPIC, msg)) {
       Serial.println("MQTT Publish failed");
