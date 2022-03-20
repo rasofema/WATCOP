@@ -6,17 +6,12 @@
 #include <Arduino_MKRENV.h>
 
 const int JSON_SIZE = 1000;
+
 const int HEATER_PIN = 0;
 const int MIC_PIN = A0;
 const int BUZZER_PIN = A1;
 const int WATER_LEVEL_PIN = A2;
-
-// Add WiFi connection information
-char ssid[] = SECRET_SSID;     //  your network SSID (name)
-char pass[] = SECRET_PASS;  // your network password
-
-int WiFistatus = WL_IDLE_STATUS;     // the Wifi radio's status
-
+const int MOTOR_PIN = A3;
 
 
 // MQTT objects
@@ -42,86 +37,45 @@ void callback(char* topic, byte* payload, unsigned int length) {
 
 
 
-
 void setup() {
-  pinMode(HEATER_PIN,OUTPUT);
   pinMode(MIC_PIN,INPUT);
+  pinMode(HEATER_PIN,OUTPUT);
   pinMode(BUZZER_PIN,OUTPUT);
+  pinMode(MOTOR_PIN,OUTPUT);
   
-  //Initialize serial and wait for port to open:
-  Serial.begin(9600);
-  while (!Serial) {
-    ; // wait for serial port to connect. Needed for native USB port only
-  }
-  if (!ENV.begin()) { //check correct initialisation of shield
-    Serial.println("Failed to initialize MKR ENV shield!");
-    while (1); //infinite loop, avoids loop to be executed
-  }
-  // attempt to connect to Wifi network:
-
-  while (WiFistatus != WL_CONNECTED) {
-    Serial.print("Attempting to connect to network: ");
-    Serial.println(ssid);
-    // Connect to WPA/WPA2 network:
-    WiFistatus = WiFi.begin(ssid, pass);
-
-    // wait 10 seconds for connection:
-    delay(10000);
-  }
-
-  // you're connected now, so print out the data:
-  Serial.println("You're connected to the network");
-  
-  Serial.println("----------------------------------------");
-  printData();
-  Serial.println("----------------------------------------");
-
-  // Connect to MQTT - IBM Watson IoT Platform
-  if (mqtt.connect(MQTT_DEVICEID, MQTT_USER, MQTT_TOKEN)) {
-    Serial.println("MQTT Connected");
-    mqtt.subscribe(MQTT_TOPIC_DISPLAY);
-
-  } else {
-    Serial.println("MQTT Failed to connect!");
-  }
+  initialiseSerial();
+  checkENVShieldInitialisation();
+  connectToWiFiNetwork();
 }
+
 
 void loop() {
   mqtt.loop();
-  while (!mqtt.connected()) {
-    Serial.print("Attempting MQTT connection...");
-    // Attempt to connect
-    if (mqtt.connect(MQTT_DEVICEID, MQTT_USER, MQTT_TOKEN)) {
-      Serial.println("MQTT Connected");
-      mqtt.subscribe(MQTT_TOPIC_DISPLAY);
-      mqtt.loop();
-    } else {
-      Serial.println("MQTT Failed to connect!");
-      delay(5000);
-    }
-  }
+  connectToMQTT();
+
+  // Read from sensors
   float temp = ENV.readTemperature();
   float humi = ENV.readHumidity();
   float illu = ENV.readIlluminance();
   int sound = analogRead(MIC_PIN);
   float water = analogRead(WATER_LEVEL_PIN);
 
-  // Check if any reads failed and exit early (to try again).
+  // Check if any reads failed
   if (isnan(temp) || isnan(humi) || isnan(illu)) {
     Serial.println("Failed to read data!");
   } else {
 
-    // Send data to Watson IoT Platform
+    // Prepare data
     status["temp"] = temp;
     status["humi"] = humi;
     status["illu"] = illu;
     status["sound"] = sound;
     status["water"] = water;
 
-
     serializeJson(jsonDoc, msg, JSON_SIZE);
-
     Serial.println(msg);
+
+    // Send data to Watson IoT Platform
     if (!mqtt.publish(MQTT_TOPIC, msg)) {
       Serial.println("MQTT Publish failed");
     }
@@ -134,25 +88,38 @@ void loop() {
   }
 }
 
+
+
+void connectToMQTT() {
+  while (!mqtt.connected()) {
+    if (mqtt.connect(MQTT_DEVICEID, MQTT_USER, MQTT_TOKEN)) {
+      Serial.println("MQTT Connected");
+      mqtt.subscribe(MQTT_TOPIC_DISPLAY);
+      mqtt.loop();
+    } else {
+      Serial.println("MQTT Failed to connect!");
+      delay(5000);
+    }
+  }
+}
+
 void printData() {
+  Serial.println("----------------------------------------");
   Serial.println("Board Information:");
-  // print your board's IP address:
-  IPAddress ip = WiFi.localIP();
+
   Serial.print("IP Address: ");
-  Serial.println(ip);
+  Serial.println(WiFi.localIP());
 
   Serial.println();
   Serial.println("Network Information:");
   Serial.print("SSID: ");
   Serial.println(WiFi.SSID());
 
-  // print the received signal strength:
-  long rssi = WiFi.RSSI();
   Serial.print("signal strength (RSSI):");
-  Serial.println(rssi);
+  Serial.println(WiFi.RSSI());
 
-  byte encryption = WiFi.encryptionType();
   Serial.print("Encryption Type:");
-  Serial.println(encryption, HEX);
+  Serial.println(WiFi.encryptionType(), HEX);
   Serial.println();
+  Serial.println("----------------------------------------");
 }
