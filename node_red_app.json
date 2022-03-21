@@ -1,0 +1,349 @@
+[
+    {
+        "id": "d4a9b32e324082e1",
+        "type": "tab",
+        "label": "Flow 1",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
+        "id": "216dad58.0b1502",
+        "type": "ibmiot in",
+        "z": "d4a9b32e324082e1",
+        "authentication": "apiKey",
+        "apiKey": "5a3715f5bab94757",
+        "inputType": "evt",
+        "logicalInterface": "",
+        "ruleId": "",
+        "deviceId": "",
+        "applicationId": "",
+        "deviceType": "",
+        "eventType": "",
+        "commandType": "",
+        "format": "",
+        "name": "IBM IoT App In",
+        "service": "registered",
+        "allDevices": true,
+        "allApplications": "",
+        "allDeviceTypes": true,
+        "allLogicalInterfaces": false,
+        "allEvents": true,
+        "allCommands": "",
+        "allFormats": "",
+        "qos": "0",
+        "x": 260,
+        "y": 380,
+        "wires": [
+            [
+                "f9e13431.747ac8",
+                "2de9a99.8dc7cd6"
+            ]
+        ]
+    },
+    {
+        "id": "f9e13431.747ac8",
+        "type": "function",
+        "z": "d4a9b32e324082e1",
+        "name": "temp",
+        "func": "return {payload:msg.payload.d.temp};",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 443.00001525878906,
+        "y": 421.2000732421875,
+        "wires": [
+            [
+                "173a577e881643a6"
+            ]
+        ]
+    },
+    {
+        "id": "7380a4e7.57326c",
+        "type": "switch",
+        "z": "d4a9b32e324082e1",
+        "name": "temp thresh",
+        "property": "payload",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "lte",
+                "v": "40",
+                "vt": "str"
+            },
+            {
+                "t": "gt",
+                "v": "40",
+                "vt": "str"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 2,
+        "x": 630,
+        "y": 420,
+        "wires": [
+            [
+                "aae9df13.376ee8"
+            ],
+            [
+                "233e8b4.9dff6f4"
+            ]
+        ]
+    },
+    {
+        "id": "eebb91b0.4b4108",
+        "type": "debug",
+        "z": "d4a9b32e324082e1",
+        "name": "cpu status",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1010,
+        "y": 400,
+        "wires": []
+    },
+    {
+        "id": "2de9a99.8dc7cd6",
+        "type": "debug",
+        "z": "d4a9b32e324082e1",
+        "name": "device data",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 443.00001525878906,
+        "y": 332.2000732421875,
+        "wires": []
+    },
+    {
+        "id": "aae9df13.376ee8",
+        "type": "template",
+        "z": "d4a9b32e324082e1",
+        "name": "safe",
+        "field": "payload",
+        "fieldType": "msg",
+        "syntax": "mustache",
+        "template": "Temperature ({{payload}}) within safe limits",
+        "x": 790,
+        "y": 340,
+        "wires": [
+            [
+                "eebb91b0.4b4108"
+            ]
+        ]
+    },
+    {
+        "id": "233e8b4.9dff6f4",
+        "type": "template",
+        "z": "d4a9b32e324082e1",
+        "name": "danger",
+        "field": "payload",
+        "fieldType": "msg",
+        "syntax": "mustache",
+        "template": "Temperature ({{payload}}) critical",
+        "x": 780,
+        "y": 420,
+        "wires": [
+            [
+                "eebb91b0.4b4108"
+            ]
+        ]
+    },
+    {
+        "id": "cd2239f341d412e8",
+        "type": "cloudant out",
+        "z": "d4a9b32e324082e1",
+        "name": "temp",
+        "cloudant": "",
+        "database": "watcop-db",
+        "service": "cool-app-cloudant-1644397982194-95552",
+        "payonly": false,
+        "operation": "insert",
+        "x": 790,
+        "y": 540,
+        "wires": []
+    },
+    {
+        "id": "d7cf717c7614701a",
+        "type": "http response",
+        "z": "d4a9b32e324082e1",
+        "name": "",
+        "statusCode": "",
+        "headers": {},
+        "x": 930,
+        "y": 660,
+        "wires": []
+    },
+    {
+        "id": "0de86458b66f5fd9",
+        "type": "template",
+        "z": "d4a9b32e324082e1",
+        "name": "format page",
+        "field": "payload",
+        "fieldType": "msg",
+        "format": "handlebars",
+        "syntax": "mustache",
+        "template": "<html>\n    <head>\n        <meta http-equiv=\"refresh\" content=\"5\">\n        <script>{{value.script}}</script>\n    </head>\n<body>\n    Sound: {{ count}}\n    <p>\n        \n    Humidity: {{ count}}\n    <p>\n        \n    Light: {{ count}}\n    <p>\n        \n    Temperature: {{ count}}\n    <br>\n    <button onclick=\"heater()\">Heater</button>\n    <p>\n        \n    Water: {{ count}}\n    <br>\n    <button onclick=\"pour()\">Pour</button>\n    <p>\n        \n    Food Times:\n    <ul id=\"resourceList\"></ul>\n    <script>\n        let\n            resources = [\n            {\n                time: \"11:00\"\n            },\n            {\n                time: \"19:00\"\n            },\n        ],\n        alert(\"Before\")\n        \n        resources.forEach(o => {\n            var entry = document.createElement('li');\n            buttonElem.innerHTML = o.time;\n            var buttonElem = entry.appendChild(document.createElement(\"button\"));\n            buttonElem.innerHTML = \"Delete\";\n            buttonElem.onclick = function() {\n                this.parentElement.remove();\n            }\n            document.getElementById('resourceList').appendChild(entry);\n            alert(\"HI\")\n        });\n    </script>\n    <br>\n    <input name=\"name\" id=\"input_field\">\n</form>\n\n\n\n<script>\nfunction deleteTime(elem) {\n    element = document.getElementById(elem);\n    alert(elem, element)\n    element.remove()\n}\n\nfunction heater() {\n    let url = \"https://willmishapp.eu-gb.mybluemix.net/history\";\n\n    let xhr = new XMLHttpRequest();\n    xhr.open(\"POST\", url);\n    \n    xhr.setRequestHeader(\"Accept\", \"application/json\");\n    xhr.setRequestHeader(\"Content-Type\", \"application/json\");\n    \n    xhr.onreadystatechange = function () {\n       if (xhr.readyState === 4) {\n          console.log(xhr.responseText);\n       }};\n    \n    let data = JSON.stringify({\"heater\": \"on\"})\n    \n    xhr.send(data);\n}\n\nfunction pour() {\n    let url = \"https://willmishapp.eu-gb.mybluemix.net/history\";\n\n    let xhr = new XMLHttpRequest();\n    xhr.open(\"POST\", url);\n    \n    xhr.setRequestHeader(\"Accept\", \"application/json\");\n    xhr.setRequestHeader(\"Content-Type\", \"application/json\");\n    \n    xhr.onreadystatechange = function () {\n       if (xhr.readyState === 4) {\n          console.log(xhr.responseText);\n       }};\n    \n    let data = JSON.stringify({\"pour\": \"yes\"})\n    \n    xhr.send(data);\n}\n\nfunction myFunction() {\n    let url = \"https://willmishapp.eu-gb.mybluemix.net/history\";\n\n    let xhr = new XMLHttpRequest();\n    xhr.open(\"POST\", url);\n    \n    xhr.setRequestHeader(\"Accept\", \"application/json\");\n    xhr.setRequestHeader(\"Content-Type\", \"application/json\");\n    \n    xhr.onreadystatechange = function () {\n       if (xhr.readyState === 4) {\n          console.log(xhr.responseText);\n       }};\n    \n    let data = JSON.stringify({\"name\": document.getElementById(\"input_field\").value})\n    \n    xhr.send(data);\n}\n</script>\n\n\n</body>\n</html>\n",
+        "x": 790,
+        "y": 660,
+        "wires": [
+            [
+                "d7cf717c7614701a"
+            ]
+        ]
+    },
+    {
+        "id": "2ede16ab688c964b",
+        "type": "function",
+        "z": "d4a9b32e324082e1",
+        "name": "temp stats",
+        "func": "var avg = 0;\nvar max = 0;\nvar min = 9999;\nvar count = 0;\nvar sum = 0;\nvar temp =0;\n\nfor (var i in msg.payload){\n    temp = parseFloat(msg.payload[i].payload);\n    if (temp == NaN)\n        continue;\n    count += 1;\n    sum += temp;\n    if (temp > max){\n        max = temp;\n    }\n    if (temp < min){\n        min = temp;\n    }\n}\n\navg = sum / count;\n\nmsg.count = count;\nmsg.avg = avg.toFixed(2); \nmsg.max = max;\nmsg.min = min;\n\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 628,
+        "y": 659,
+        "wires": [
+            [
+                "0de86458b66f5fd9"
+            ]
+        ]
+    },
+    {
+        "id": "e62fce45716c28e9",
+        "type": "cloudant in",
+        "z": "d4a9b32e324082e1",
+        "name": "",
+        "cloudant": "",
+        "database": "watcop-db",
+        "service": "cool-app-cloudant-1644397982194-95552",
+        "search": "_all_",
+        "design": "",
+        "index": "",
+        "x": 466,
+        "y": 660,
+        "wires": [
+            [
+                "2ede16ab688c964b"
+            ]
+        ]
+    },
+    {
+        "id": "56fca59663c31275",
+        "type": "http in",
+        "z": "d4a9b32e324082e1",
+        "name": "",
+        "url": "/history",
+        "method": "get",
+        "upload": false,
+        "swaggerDoc": "",
+        "x": 250,
+        "y": 660,
+        "wires": [
+            [
+                "e62fce45716c28e9"
+            ]
+        ]
+    },
+    {
+        "id": "173a577e881643a6",
+        "type": "switch",
+        "z": "d4a9b32e324082e1",
+        "name": "",
+        "property": "payload",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "nnull"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 1,
+        "x": 450,
+        "y": 540,
+        "wires": [
+            [
+                "16826fb6795811e9"
+            ]
+        ]
+    },
+    {
+        "id": "16826fb6795811e9",
+        "type": "function",
+        "z": "d4a9b32e324082e1",
+        "name": "",
+        "func": "\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 600,
+        "y": 540,
+        "wires": [
+            [
+                "cd2239f341d412e8",
+                "7380a4e7.57326c"
+            ]
+        ]
+    },
+    {
+        "id": "02ace9ab128f3e9f",
+        "type": "debug",
+        "z": "d4a9b32e324082e1",
+        "name": "",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 450,
+        "y": 740,
+        "wires": []
+    },
+    {
+        "id": "22d01919af5ea0a6",
+        "type": "http in",
+        "z": "d4a9b32e324082e1",
+        "name": "",
+        "url": "/history",
+        "method": "post",
+        "upload": false,
+        "swaggerDoc": "",
+        "x": 270,
+        "y": 740,
+        "wires": [
+            [
+                "02ace9ab128f3e9f"
+            ]
+        ]
+    },
+    {
+        "id": "5a3715f5bab94757",
+        "type": "ibmiot",
+        "name": "Szymeks board API",
+        "keepalive": "60",
+        "serverName": "x8puew.messaging.internetofthings.ibmcloud.com",
+        "cleansession": true,
+        "appId": "",
+        "shared": false
+    }
+]
