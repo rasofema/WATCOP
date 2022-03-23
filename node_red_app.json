@@ -32,12 +32,12 @@
         "allCommands": "",
         "allFormats": "",
         "qos": "0",
-        "x": 260,
-        "y": 380,
+        "x": 80,
+        "y": 360,
         "wires": [
             [
-                "f9e13431.747ac8",
-                "2de9a99.8dc7cd6"
+                "173a577e881643a6",
+                "d65eb96086ba96e1"
             ]
         ]
     },
@@ -45,18 +45,18 @@
         "id": "f9e13431.747ac8",
         "type": "function",
         "z": "d4a9b32e324082e1",
-        "name": "temp",
-        "func": "return {payload:msg.payload.d.temp};",
+        "name": "sensor_data",
+        "func": "return msg;",
         "outputs": 1,
         "noerr": 0,
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 443.00001525878906,
-        "y": 421.2000732421875,
+        "x": 450,
+        "y": 420,
         "wires": [
             [
-                "173a577e881643a6"
+                "b45762f841ae061a"
             ]
         ]
     },
@@ -82,8 +82,8 @@
         "checkall": "true",
         "repair": false,
         "outputs": 2,
-        "x": 630,
-        "y": 420,
+        "x": 730,
+        "y": 240,
         "wires": [
             [
                 "aae9df13.376ee8"
@@ -98,7 +98,7 @@
         "type": "debug",
         "z": "d4a9b32e324082e1",
         "name": "cpu status",
-        "active": true,
+        "active": false,
         "tosidebar": true,
         "console": false,
         "tostatus": false,
@@ -106,25 +106,8 @@
         "targetType": "msg",
         "statusVal": "",
         "statusType": "auto",
-        "x": 1010,
-        "y": 400,
-        "wires": []
-    },
-    {
-        "id": "2de9a99.8dc7cd6",
-        "type": "debug",
-        "z": "d4a9b32e324082e1",
-        "name": "device data",
-        "active": true,
-        "tosidebar": true,
-        "console": false,
-        "tostatus": false,
-        "complete": "payload",
-        "targetType": "msg",
-        "statusVal": "",
-        "statusType": "auto",
-        "x": 443.00001525878906,
-        "y": 332.2000732421875,
+        "x": 1110,
+        "y": 240,
         "wires": []
     },
     {
@@ -136,8 +119,8 @@
         "fieldType": "msg",
         "syntax": "mustache",
         "template": "Temperature ({{payload}}) within safe limits",
-        "x": 790,
-        "y": 340,
+        "x": 890,
+        "y": 180,
         "wires": [
             [
                 "eebb91b0.4b4108"
@@ -153,8 +136,8 @@
         "fieldType": "msg",
         "syntax": "mustache",
         "template": "Temperature ({{payload}}) critical",
-        "x": 780,
-        "y": 420,
+        "x": 880,
+        "y": 260,
         "wires": [
             [
                 "eebb91b0.4b4108"
@@ -165,14 +148,14 @@
         "id": "cd2239f341d412e8",
         "type": "cloudant out",
         "z": "d4a9b32e324082e1",
-        "name": "temp",
+        "name": "watcop-db",
         "cloudant": "",
         "database": "watcop-db",
         "service": "cool-app-cloudant-1644397982194-95552",
         "payonly": false,
         "operation": "insert",
-        "x": 790,
-        "y": 540,
+        "x": 990,
+        "y": 420,
         "wires": []
     },
     {
@@ -182,7 +165,7 @@
         "name": "",
         "statusCode": "",
         "headers": {},
-        "x": 930,
+        "x": 1110,
         "y": 660,
         "wires": []
     },
@@ -195,8 +178,8 @@
         "fieldType": "msg",
         "format": "handlebars",
         "syntax": "mustache",
-        "template": "<html>\n    <head>\n        <meta http-equiv=\"refresh\" content=\"5\">\n        <script>{{value.script}}</script>\n    </head>\n<body>\n    Sound: {{ count}}\n    <p>\n        \n    Humidity: {{ count}}\n    <p>\n        \n    Light: {{ count}}\n    <p>\n        \n    Temperature: {{ count}}\n    <br>\n    <button onclick=\"heater()\">Heater</button>\n    <p>\n        \n    Water: {{ count}}\n    <br>\n    <button onclick=\"pour()\">Pour</button>\n    <p>\n        \n    Food Times:\n    <ul id=\"resourceList\"></ul>\n    <script>\n        let\n            resources = [\n            {\n                time: \"11:00\"\n            },\n            {\n                time: \"19:00\"\n            },\n        ],\n        alert(\"Before\")\n        \n        resources.forEach(o => {\n            var entry = document.createElement('li');\n            buttonElem.innerHTML = o.time;\n            var buttonElem = entry.appendChild(document.createElement(\"button\"));\n            buttonElem.innerHTML = \"Delete\";\n            buttonElem.onclick = function() {\n                this.parentElement.remove();\n            }\n            document.getElementById('resourceList').appendChild(entry);\n            alert(\"HI\")\n        });\n    </script>\n    <br>\n    <input name=\"name\" id=\"input_field\">\n</form>\n\n\n\n<script>\nfunction deleteTime(elem) {\n    element = document.getElementById(elem);\n    alert(elem, element)\n    element.remove()\n}\n\nfunction heater() {\n    let url = \"https://willmishapp.eu-gb.mybluemix.net/history\";\n\n    let xhr = new XMLHttpRequest();\n    xhr.open(\"POST\", url);\n    \n    xhr.setRequestHeader(\"Accept\", \"application/json\");\n    xhr.setRequestHeader(\"Content-Type\", \"application/json\");\n    \n    xhr.onreadystatechange = function () {\n       if (xhr.readyState === 4) {\n          console.log(xhr.responseText);\n       }};\n    \n    let data = JSON.stringify({\"heater\": \"on\"})\n    \n    xhr.send(data);\n}\n\nfunction pour() {\n    let url = \"https://willmishapp.eu-gb.mybluemix.net/history\";\n\n    let xhr = new XMLHttpRequest();\n    xhr.open(\"POST\", url);\n    \n    xhr.setRequestHeader(\"Accept\", \"application/json\");\n    xhr.setRequestHeader(\"Content-Type\", \"application/json\");\n    \n    xhr.onreadystatechange = function () {\n       if (xhr.readyState === 4) {\n          console.log(xhr.responseText);\n       }};\n    \n    let data = JSON.stringify({\"pour\": \"yes\"})\n    \n    xhr.send(data);\n}\n\nfunction myFunction() {\n    let url = \"https://willmishapp.eu-gb.mybluemix.net/history\";\n\n    let xhr = new XMLHttpRequest();\n    xhr.open(\"POST\", url);\n    \n    xhr.setRequestHeader(\"Accept\", \"application/json\");\n    xhr.setRequestHeader(\"Content-Type\", \"application/json\");\n    \n    xhr.onreadystatechange = function () {\n       if (xhr.readyState === 4) {\n          console.log(xhr.responseText);\n       }};\n    \n    let data = JSON.stringify({\"name\": document.getElementById(\"input_field\").value})\n    \n    xhr.send(data);\n}\n</script>\n\n\n</body>\n</html>\n",
-        "x": 790,
+        "template": "<html>\n    <head>\n        <meta http-equiv=\"refresh\" content=\"5\">\n         <script src=\"https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js\"></script>\n    </head>\n<body>\n        Timestamp: {{ timestamp}}<p>\n\n    Sound: {{ sound}}\n    <p>\n        \n    Humidity: {{ humi}}\n    <p>\n        \n    Light: {{ illu}}\n    <p>\n        \n    Temperature: {{ temp}}\n    <br>\n    <button onclick=\"heater()\">Heater</button>\n    <p>\n        \n    Water: {{ water}}\n    <br>\n    <button onclick=\"pour()\">Pour</button>\n    <p>\n        \n    Food Times:\n    <ul id=\"resourceList\"></ul>\n    <script>\n        let\n            resources = [\n            {\n                time: \"11:00\"\n            },\n            {\n                time: \"19:00\"\n            },\n        ]\n\n        resources.forEach(o => {\n            var entry = document.createElement('li');\n            entry.innerHTML = o.time;\n            var buttonElem = entry.appendChild(document.createElement(\"button\"));\n            buttonElem.innerHTML = \"Delete\";\n            buttonElem.onclick = function() {\n                this.parentElement.remove();\n            }\n            document.getElementById('resourceList').appendChild(entry);\n        });\n    </script>\n    <br>\n    <input name=\"name\" id=\"input_field\">\n</form>\n        <script>\n        console.log({{temp}})\n        function deleteTime(elem) {\n    element = document.getElementById(elem);\n    alert(element)\n    element.remove()\n}\n\nfunction heater() {\n    console.log(\"HELOO\");\n    let url = \"https://willmishapp.eu-gb.mybluemix.net/history\";\n\n    let xhr = new XMLHttpRequest();\n    xhr.open(\"POST\", url);\n    \n    xhr.setRequestHeader(\"Accept\", \"application/json\");\n    xhr.setRequestHeader(\"Content-Type\", \"application/json\");\n    \n    xhr.onreadystatechange = function () {\n       if (xhr.readyState === 4) {\n          console.log(xhr.responseText);\n       }};\n    \n    let data = JSON.stringify({\"heater\": \"on\"})\n    \n    xhr.send(data);\n}\n\nfunction pour() {\n    let url = \"https://willmishapp.eu-gb.mybluemix.net/history\";\n\n    let xhr = new XMLHttpRequest();\n    xhr.open(\"POST\", url);\n    \n    xhr.setRequestHeader(\"Accept\", \"application/json\");\n    xhr.setRequestHeader(\"Content-Type\", \"application/json\");\n    \n    xhr.onreadystatechange = function () {\n       if (xhr.readyState === 4) {\n          console.log(xhr.responseText);\n       }};\n    \n    let data = JSON.stringify({\"pour\": \"yes\"})\n    \n    xhr.send(data);\n}\n\nfunction myFunction() {\n    let url = \"https://willmishapp.eu-gb.mybluemix.net/history\";\n\n    let xhr = new XMLHttpRequest();\n    xhr.open(\"POST\", url);\n    \n    xhr.setRequestHeader(\"Accept\", \"application/json\");\n    xhr.setRequestHeader(\"Content-Type\", \"application/json\");\n    \n    xhr.onreadystatechange = function () {\n       if (xhr.readyState === 4) {\n          console.log(xhr.responseText);\n       }};\n    \n    let data = JSON.stringify({\"name\": document.getElementById(\"input_field\").value})\n    \n    xhr.send(data);\n}</script>\n\n</body>\n</html>\n",
+        "x": 910,
         "y": 660,
         "wires": [
             [
@@ -209,17 +192,18 @@
         "type": "function",
         "z": "d4a9b32e324082e1",
         "name": "temp stats",
-        "func": "var avg = 0;\nvar max = 0;\nvar min = 9999;\nvar count = 0;\nvar sum = 0;\nvar temp =0;\n\nfor (var i in msg.payload){\n    temp = parseFloat(msg.payload[i].payload);\n    if (temp == NaN)\n        continue;\n    count += 1;\n    sum += temp;\n    if (temp > max){\n        max = temp;\n    }\n    if (temp < min){\n        min = temp;\n    }\n}\n\navg = sum / count;\n\nmsg.count = count;\nmsg.avg = avg.toFixed(2); \nmsg.max = max;\nmsg.min = min;\n\nreturn msg;",
+        "func": "var avg = 0;\nvar max = 0;\nvar min = 9999;\nvar count = 0;\nvar sum = 0;\nvar temp =0;\n\nvar array = Object.values(msg.payload)\narray = array.sort((a, b) => (new Date(a.payload.sensor_data.timestamp) < new Date(b.payload.sensor_data.timestamp)) ? 1 : -1)\n\nvar most_recent = array[0].payload.sensor_data\nmsg.timestamp = most_recent.timestamp;\nmsg.sound = most_recent.sound;\nmsg.humi = most_recent.humi;\nmsg.illu = most_recent.illu;\nmsg.temp = most_recent.temp;\nmsg.water = most_recent.water;\n\n/*\nfor (var i in msg.payload){\n    temp = parseFloat(msg.payload[i].payload);\n    if (temp == NaN)\n        continue;\n    count += 1;\n    sum += temp;\n    if (temp > max){\n        max = temp;\n    }\n    if (temp < min){\n        min = temp;\n    }\n}\n\n\n\navg = sum / count;\n\nmsg.count = count;\nmsg.avg = avg.toFixed(2); \nmsg.max = max;\nmsg.min = min;*/\n//msg.temp = typeof(Object.values(msg.payload))\nreturn msg;",
         "outputs": 1,
         "noerr": 0,
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 628,
-        "y": 659,
+        "x": 670,
+        "y": 660,
         "wires": [
             [
-                "0de86458b66f5fd9"
+                "0de86458b66f5fd9",
+                "d935f4b8f31c5228"
             ]
         ]
     },
@@ -234,11 +218,12 @@
         "search": "_all_",
         "design": "",
         "index": "",
-        "x": 466,
+        "x": 450,
         "y": 660,
         "wires": [
             [
-                "2ede16ab688c964b"
+                "2ede16ab688c964b",
+                "0365b428b2be7228"
             ]
         ]
     },
@@ -268,38 +253,41 @@
         "propertyType": "msg",
         "rules": [
             {
-                "t": "nnull"
+                "t": "hask",
+                "v": "heater_status",
+                "vt": "str"
+            },
+            {
+                "t": "hask",
+                "v": "pump_status",
+                "vt": "str"
+            },
+            {
+                "t": "hask",
+                "v": "sensor_data",
+                "vt": "str"
             }
         ],
-        "checkall": "true",
+        "checkall": "false",
         "repair": false,
-        "outputs": 1,
-        "x": 450,
-        "y": 540,
+        "outputs": 3,
+        "x": 270,
+        "y": 360,
         "wires": [
             [
-                "16826fb6795811e9"
-            ]
-        ]
-    },
-    {
-        "id": "16826fb6795811e9",
-        "type": "function",
-        "z": "d4a9b32e324082e1",
-        "name": "",
-        "func": "\nreturn msg;",
-        "outputs": 1,
-        "noerr": 0,
-        "initialize": "",
-        "finalize": "",
-        "libs": [],
-        "x": 600,
-        "y": 540,
-        "wires": [
+                "6da6fce143d44956"
+            ],
             [
-                "cd2239f341d412e8",
-                "7380a4e7.57326c"
+                "5c2b98be564fcf6e"
+            ],
+            [
+                "f9e13431.747ac8"
             ]
+        ],
+        "outputLabels": [
+            "heater_status",
+            "pump_status",
+            "sensor_data"
         ]
     },
     {
@@ -332,7 +320,224 @@
         "y": 740,
         "wires": [
             [
-                "02ace9ab128f3e9f"
+                "02ace9ab128f3e9f",
+                "46b174e2a31a76e4"
+            ]
+        ]
+    },
+    {
+        "id": "6057b9535c7bce0f",
+        "type": "comment",
+        "z": "d4a9b32e324082e1",
+        "name": "Returns all values in sensor_data object: temp, hum, ilu, and water_level",
+        "info": "",
+        "x": 250,
+        "y": 460,
+        "wires": []
+    },
+    {
+        "id": "3380ea21a0417e47",
+        "type": "comment",
+        "z": "d4a9b32e324082e1",
+        "name": "Only move forward if data is not null",
+        "info": "",
+        "x": 240,
+        "y": 560,
+        "wires": []
+    },
+    {
+        "id": "0365b428b2be7228",
+        "type": "debug",
+        "z": "d4a9b32e324082e1",
+        "name": "",
+        "active": false,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload[0]",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 680,
+        "y": 720,
+        "wires": []
+    },
+    {
+        "id": "b45762f841ae061a",
+        "type": "change",
+        "z": "d4a9b32e324082e1",
+        "name": "",
+        "rules": [
+            {
+                "t": "set",
+                "p": "payload.sensor_data.timestamp",
+                "pt": "msg",
+                "to": "$now()",
+                "tot": "jsonata"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 720,
+        "y": 420,
+        "wires": [
+            [
+                "cd2239f341d412e8",
+                "196a8ef30b5d5dff"
+            ]
+        ]
+    },
+    {
+        "id": "d935f4b8f31c5228",
+        "type": "debug",
+        "z": "d4a9b32e324082e1",
+        "name": "",
+        "active": false,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "temp",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 900,
+        "y": 720,
+        "wires": []
+    },
+    {
+        "id": "46b174e2a31a76e4",
+        "type": "ibmiot out",
+        "z": "d4a9b32e324082e1",
+        "authentication": "apiKey",
+        "apiKey": "5a3715f5bab94757",
+        "outputType": "cmd",
+        "deviceId": "9C9C1FC187E0",
+        "deviceType": "mkr1010",
+        "eventCommandType": "display",
+        "format": "json",
+        "data": "payload",
+        "qos": "1",
+        "name": "IBM IoT",
+        "service": "registered",
+        "x": 460,
+        "y": 820,
+        "wires": []
+    },
+    {
+        "id": "d65eb96086ba96e1",
+        "type": "debug",
+        "z": "d4a9b32e324082e1",
+        "name": "device data",
+        "active": false,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 290,
+        "y": 240,
+        "wires": []
+    },
+    {
+        "id": "6da6fce143d44956",
+        "type": "function",
+        "z": "d4a9b32e324082e1",
+        "name": "heater_status",
+        "func": "return msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 440,
+        "y": 300,
+        "wires": [
+            [
+                "1c2ce3a28158a037"
+            ]
+        ]
+    },
+    {
+        "id": "5c2b98be564fcf6e",
+        "type": "function",
+        "z": "d4a9b32e324082e1",
+        "name": "pump_status",
+        "func": "return msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 450,
+        "y": 360,
+        "wires": [
+            [
+                "1c2ce3a28158a037"
+            ]
+        ]
+    },
+    {
+        "id": "196a8ef30b5d5dff",
+        "type": "debug",
+        "z": "d4a9b32e324082e1",
+        "name": "device data",
+        "active": false,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 990,
+        "y": 480,
+        "wires": []
+    },
+    {
+        "id": "705226d90e33cfc1",
+        "type": "cloudant out",
+        "z": "d4a9b32e324082e1",
+        "d": true,
+        "name": "watcop-actuator-values",
+        "cloudant": "",
+        "database": "watcop-actuator-values",
+        "service": "cool-app-cloudant-1644397982194-95552",
+        "payonly": false,
+        "operation": "insert",
+        "x": 1090,
+        "y": 340,
+        "wires": []
+    },
+    {
+        "id": "1c2ce3a28158a037",
+        "type": "change",
+        "z": "d4a9b32e324082e1",
+        "d": true,
+        "name": "",
+        "rules": [
+            {
+                "t": "set",
+                "p": "payload.sensor_data.timestamp",
+                "pt": "msg",
+                "to": "$now()",
+                "tot": "jsonata"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 740,
+        "y": 340,
+        "wires": [
+            [
+                "705226d90e33cfc1"
             ]
         ]
     },
