@@ -8,11 +8,14 @@
 const int JSON_SIZE = 1000;
 
 const int HEATER_PIN = 0;
+const int WATER_PUMP_PIN = 1;
 const int MIC_PIN = A0;
 const int BUZZER_PIN = A1;
 const int WATER_LEVEL_PIN = A2;
 const int MOTOR_PIN = A3;
 
+bool heater_status = false;
+bool pump_status = false;
 
 // MQTT objects
 void callback(char* topic, byte* payload, unsigned int length);
@@ -22,7 +25,14 @@ PubSubClient mqtt(MQTT_HOST, MQTT_PORT, callback, wifiClient);
 // variables to hold data
 StaticJsonDocument<JSON_SIZE> jsonDoc;
 JsonObject payload = jsonDoc.to<JsonObject>();
-JsonObject status = payload.createNestedObject("d");
+JsonObject status = payload.createNestedObject("sensor_data");
+
+StaticJsonDocument<JSON_SIZE> jsonDocHeater;
+JsonObject payloadHeater = jsonDocHeater.to<JsonObject>();
+
+StaticJsonDocument<JSON_SIZE> jsonDocPump;
+JsonObject payloadPump = jsonDocPump.to<JsonObject>();
+
 static char msg[JSON_SIZE];
 
 void callback(char* topic, byte* payload, unsigned int length) {
@@ -39,6 +49,8 @@ void callback(char* topic, byte* payload, unsigned int length) {
 
 void setup() {
   pinMode(MIC_PIN,INPUT);
+  pinMode(WATER_LEVEL_PIN,INPUT);
+  pinMode(WATER_PUMP_PIN,OUTPUT);
   pinMode(HEATER_PIN,OUTPUT);
   pinMode(BUZZER_PIN,OUTPUT);
   pinMode(MOTOR_PIN,OUTPUT);
@@ -46,13 +58,28 @@ void setup() {
   initialiseSerial();
   checkENVShieldInitialisation();
   connectToWiFiNetwork();
+  
+  mqtt.loop();
+  connectToMQTT();
+
+
+  payloadHeater["heater_status"] = heater_status;
+  serializeJson(jsonDocHeater, msg, JSON_SIZE);
+  Serial.println(msg);
+  if (!mqtt.publish(MQTT_TOPIC, msg)) {
+   Serial.println("MQTT Publish failed");
+  }
+  
+  payloadPump["pump_status"] = pump_status;
+  serializeJson(jsonDocPump, msg, JSON_SIZE);
+  Serial.println(msg);
+  if (!mqtt.publish(MQTT_TOPIC, msg)) {
+   Serial.println("MQTT Publish failed");
+  }
 }
 
 
 void loop() {
-  mqtt.loop();
-  connectToMQTT();
-
   // Read from sensors
   float temp = ENV.readTemperature();
   float humi = ENV.readHumidity();
@@ -86,6 +113,9 @@ void loop() {
     mqtt.loop();
     delay(1000);
   }
+
+  mqtt.loop();
+  connectToMQTT();
 }
 
 
