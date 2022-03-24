@@ -1,4 +1,7 @@
+#pragma once
 #include "arduino_secrets.h"
+#include "setup.h"
+#include <string.h>
 #include <WiFiNINA.h>
 #include <ArduinoMqttClient.h>
 #include <ArduinoJson.h>
@@ -19,6 +22,10 @@ bool pump_status = false;
 
 // MQTT objects
 void callback(char* topic, byte* payload, unsigned int length);
+void sendHeaterStatus();
+void sendPumpStatus();
+
+void connectToMQTT();
 WiFiClient wifiClient;
 PubSubClient mqtt(MQTT_HOST, MQTT_PORT, callback, wifiClient);
 
@@ -34,6 +41,8 @@ StaticJsonDocument<JSON_SIZE> jsonDocPump;
 JsonObject payloadPump = jsonDocPump.to<JsonObject>();
 
 static char msg[JSON_SIZE];
+StaticJsonDocument<128> callbackDoc;
+DeserializationError error;
 
 void callback(char* topic, byte* payload, unsigned int length) {
   // handle message arrived
@@ -43,9 +52,45 @@ void callback(char* topic, byte* payload, unsigned int length) {
 
   payload[length] = 0; // ensure valid content is zero terminated so can treat as c-string
   Serial.println((char *)payload);
+  error = deserializeJson(callbackDoc, (char *) payload);
+  if (error) {
+    Serial.print(F("deserializeJson() failed: "));
+    Serial.println(error.f_str());
+    return;
+  }
+  // Check whether the sent message is heater
+  if (strcmp(((const char*) callbackDoc["object"]), "heater") == 0)
+  {
+    heater_status = !heater_status;
+    sendHeaterStatus();
+    return;
+  }
+  // Check whether the sent message is pump 
+  if (strcmp(((const char*) callbackDoc["object"]), "water_pump") == 0)
+  {
+    pump_status = !pump_status;
+    sendPumpStatus();
+    return;
+  }
 }
 
+void sendHeaterStatus() {
+  payloadHeater["heater_status"] = heater_status;
+  serializeJson(jsonDocHeater, msg, JSON_SIZE);
+  Serial.println(msg);
+  if (!mqtt.publish(MQTT_TOPIC, msg)) {
+   Serial.println("MQTT Publish failed");
+  }
+}
 
+void sendPumpStatus() {
+  payloadPump["pump_status"] = pump_status;
+  serializeJson(jsonDocPump, msg, JSON_SIZE);
+  Serial.println(msg);
+  if (!mqtt.publish(MQTT_TOPIC, msg)) {
+   Serial.println("MQTT Publish failed");
+  }
+}
 
 void setup() {
   pinMode(MIC_PIN,INPUT);
@@ -63,19 +108,9 @@ void setup() {
   connectToMQTT();
 
 
-  payloadHeater["heater_status"] = heater_status;
-  serializeJson(jsonDocHeater, msg, JSON_SIZE);
-  Serial.println(msg);
-  if (!mqtt.publish(MQTT_TOPIC, msg)) {
-   Serial.println("MQTT Publish failed");
-  }
+  sendHeaterStatus();
   
-  payloadPump["pump_status"] = pump_status;
-  serializeJson(jsonDocPump, msg, JSON_SIZE);
-  Serial.println(msg);
-  if (!mqtt.publish(MQTT_TOPIC, msg)) {
-   Serial.println("MQTT Publish failed");
-  }
+  sendPumpStatus();
 }
 
 
@@ -114,6 +149,17 @@ void loop() {
     delay(1000);
   }
 
+  // Check if heater and pump should be on(values could have been updated by MQTT messages)
+  if (heater_status)
+    digitalWrite(HEATER_PIN,HIGH);
+  else
+    digitalWrite(HEATER_PIN,LOW);
+    
+  if (pump_status)
+    digitalWrite(WATER_PUMP_PIN,HIGH);
+  else
+    digitalWrite(WATER_PUMP_PIN,LOW);
+    
   mqtt.loop();
   connectToMQTT();
 }
@@ -131,25 +177,4 @@ void connectToMQTT() {
       delay(5000);
     }
   }
-}
-
-void printData() {
-  Serial.println("----------------------------------------");
-  Serial.println("Board Information:");
-
-  Serial.print("IP Address: ");
-  Serial.println(WiFi.localIP());
-
-  Serial.println();
-  Serial.println("Network Information:");
-  Serial.print("SSID: ");
-  Serial.println(WiFi.SSID());
-
-  Serial.print("signal strength (RSSI):");
-  Serial.println(WiFi.RSSI());
-
-  Serial.print("Encryption Type:");
-  Serial.println(WiFi.encryptionType(), HEX);
-  Serial.println();
-  Serial.println("----------------------------------------");
 }

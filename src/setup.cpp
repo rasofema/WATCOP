@@ -1,5 +1,25 @@
-#include <WiFiNINA.h>
-#include <Arduino_MKRENV.h>
+#include "setup.h"
+
+void printData() {
+  Serial.println("----------------------------------------");
+  Serial.println("Board Information:");
+
+  Serial.print("IP Address: ");
+  Serial.println(WiFi.localIP());
+
+  Serial.println();
+  Serial.println("Network Information:");
+  Serial.print("SSID: ");
+  Serial.println(WiFi.SSID());
+
+  Serial.print("signal strength (RSSI):");
+  Serial.println(WiFi.RSSI());
+
+  Serial.print("Encryption Type:");
+  Serial.println(WiFi.encryptionType(), HEX);
+  Serial.println();
+  Serial.println("----------------------------------------");
+}
 
 void initialiseSerial() {
   // Initialize serial and wait for port to open
