@@ -32,8 +32,8 @@
         "allCommands": "",
         "allFormats": "",
         "qos": "0",
-        "x": 80,
-        "y": 360,
+        "x": 120,
+        "y": 320,
         "wires": [
             [
                 "173a577e881643a6",
@@ -52,95 +52,11 @@
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 450,
-        "y": 420,
+        "x": 490,
+        "y": 360,
         "wires": [
             [
                 "b45762f841ae061a"
-            ]
-        ]
-    },
-    {
-        "id": "7380a4e7.57326c",
-        "type": "switch",
-        "z": "d4a9b32e324082e1",
-        "name": "temp thresh",
-        "property": "payload",
-        "propertyType": "msg",
-        "rules": [
-            {
-                "t": "lte",
-                "v": "40",
-                "vt": "str"
-            },
-            {
-                "t": "gt",
-                "v": "40",
-                "vt": "str"
-            }
-        ],
-        "checkall": "true",
-        "repair": false,
-        "outputs": 2,
-        "x": 730,
-        "y": 240,
-        "wires": [
-            [
-                "aae9df13.376ee8"
-            ],
-            [
-                "233e8b4.9dff6f4"
-            ]
-        ]
-    },
-    {
-        "id": "eebb91b0.4b4108",
-        "type": "debug",
-        "z": "d4a9b32e324082e1",
-        "name": "cpu status",
-        "active": false,
-        "tosidebar": true,
-        "console": false,
-        "tostatus": false,
-        "complete": "payload",
-        "targetType": "msg",
-        "statusVal": "",
-        "statusType": "auto",
-        "x": 1110,
-        "y": 240,
-        "wires": []
-    },
-    {
-        "id": "aae9df13.376ee8",
-        "type": "template",
-        "z": "d4a9b32e324082e1",
-        "name": "safe",
-        "field": "payload",
-        "fieldType": "msg",
-        "syntax": "mustache",
-        "template": "Temperature ({{payload}}) within safe limits",
-        "x": 890,
-        "y": 180,
-        "wires": [
-            [
-                "eebb91b0.4b4108"
-            ]
-        ]
-    },
-    {
-        "id": "233e8b4.9dff6f4",
-        "type": "template",
-        "z": "d4a9b32e324082e1",
-        "name": "danger",
-        "field": "payload",
-        "fieldType": "msg",
-        "syntax": "mustache",
-        "template": "Temperature ({{payload}}) critical",
-        "x": 880,
-        "y": 260,
-        "wires": [
-            [
-                "eebb91b0.4b4108"
             ]
         ]
     },
@@ -154,8 +70,8 @@
         "service": "cool-app-cloudant-1644397982194-95552",
         "payonly": false,
         "operation": "insert",
-        "x": 990,
-        "y": 420,
+        "x": 1050,
+        "y": 360,
         "wires": []
     },
     {
@@ -165,8 +81,8 @@
         "name": "",
         "statusCode": "",
         "headers": {},
-        "x": 1110,
-        "y": 660,
+        "x": 950,
+        "y": 620,
         "wires": []
     },
     {
@@ -178,9 +94,9 @@
         "fieldType": "msg",
         "format": "handlebars",
         "syntax": "mustache",
-        "template": "<html>\n    <head>\n        <meta http-equiv=\"refresh\" content=\"5\">\n         <script src=\"https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js\"></script>\n    </head>\n<body>\n        Timestamp: {{ timestamp}}<p>\n\n    Sound: {{ sound}}\n    <p>\n        \n    Humidity: {{ humi}}\n    <p>\n        \n    Light: {{ illu}}\n    <p>\n        \n    Temperature: {{ temp}}\n    <br>\n    <button onclick=\"heater()\">Heater</button>\n    <p>\n        \n    Water: {{ water}}\n    <br>\n    <button onclick=\"pour()\">Pour</button>\n    <p>\n        \n    Food Times:\n    <ul id=\"resourceList\"></ul>\n    <script>\n        let\n            resources = [\n            {\n                time: \"11:00\"\n            },\n            {\n                time: \"19:00\"\n            },\n        ]\n\n        resources.forEach(o => {\n            var entry = document.createElement('li');\n            entry.innerHTML = o.time;\n            var buttonElem = entry.appendChild(document.createElement(\"button\"));\n            buttonElem.innerHTML = \"Delete\";\n            buttonElem.onclick = function() {\n                this.parentElement.remove();\n            }\n            document.getElementById('resourceList').appendChild(entry);\n        });\n    </script>\n    <br>\n    <input name=\"name\" id=\"input_field\">\n</form>\n        <script>\n        console.log({{temp}})\n        function deleteTime(elem) {\n    element = document.getElementById(elem);\n    alert(element)\n    element.remove()\n}\n\nfunction heater() {\n    console.log(\"HELOO\");\n    let url = \"https://willmishapp.eu-gb.mybluemix.net/history\";\n\n    let xhr = new XMLHttpRequest();\n    xhr.open(\"POST\", url);\n    \n    xhr.setRequestHeader(\"Accept\", \"application/json\");\n    xhr.setRequestHeader(\"Content-Type\", \"application/json\");\n    \n    xhr.onreadystatechange = function () {\n       if (xhr.readyState === 4) {\n          console.log(xhr.responseText);\n       }};\n    \n    let data = JSON.stringify({\"heater\": \"on\"})\n    \n    xhr.send(data);\n}\n\nfunction pour() {\n    let url = \"https://willmishapp.eu-gb.mybluemix.net/history\";\n\n    let xhr = new XMLHttpRequest();\n    xhr.open(\"POST\", url);\n    \n    xhr.setRequestHeader(\"Accept\", \"application/json\");\n    xhr.setRequestHeader(\"Content-Type\", \"application/json\");\n    \n    xhr.onreadystatechange = function () {\n       if (xhr.readyState === 4) {\n          console.log(xhr.responseText);\n       }};\n    \n    let data = JSON.stringify({\"pour\": \"yes\"})\n    \n    xhr.send(data);\n}\n\nfunction myFunction() {\n    let url = \"https://willmishapp.eu-gb.mybluemix.net/history\";\n\n    let xhr = new XMLHttpRequest();\n    xhr.open(\"POST\", url);\n    \n    xhr.setRequestHeader(\"Accept\", \"application/json\");\n    xhr.setRequestHeader(\"Content-Type\", \"application/json\");\n    \n    xhr.onreadystatechange = function () {\n       if (xhr.readyState === 4) {\n          console.log(xhr.responseText);\n       }};\n    \n    let data = JSON.stringify({\"name\": document.getElementById(\"input_field\").value})\n    \n    xhr.send(data);\n}</script>\n\n</body>\n</html>\n",
-        "x": 910,
-        "y": 660,
+        "template": "<html>\n    <head>\n        <meta http-equiv=\"refresh\" content=\"5\">\n         <script src=\"https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js\"></script>\n    </head>\n<body>\n        Timestamp: {{ timestamp}}<p>\n\n    Sound: {{ sound}}\n    <p>\n        \n    Humidity: {{ humi}}\n    <p>\n        \n    Light: {{ illu}}\n    <p>\n        \n    Temperature: {{ temp}}\n    <br>\n    Heater: <button id=\"heater_button\" onclick=\"heater()\" {{ heater_button_disabled}}>{{ heater_status}}</button>\n    <p>\n        \n    Water: {{ water}}\n    <br>\n    <button id=\"pump_button\" onclick=\"pour()\" {{ pump_button_disabled}}>{{ pump_status}}</button>\n    <p>\n        \n    Food Times:\n    <ul id=\"resourceList\"></ul>\n    <script>\n        let\n            resources = [\n            {\n                time: \"11:00\"\n            },\n            {\n                time: \"19:00\"\n            },\n        ]\n\n        resources.forEach(o => {\n            var entry = document.createElement('li');\n            entry.innerHTML = o.time + \" \";\n            var buttonElem = entry.appendChild(document.createElement(\"button\"));\n            buttonElem.innerHTML = \"Delete\";\n            buttonElem.onclick = function() {\n                this.parentElement.remove();\n            }\n            document.getElementById('resourceList').appendChild(entry);\n        });\n    </script>\n    <br>\n    <input name=\"name\" id=\"input_field\">\n</form>\n\n        <script>\n        console.log({{temp}})\n        function deleteTime(elem) {\n    element = document.getElementById(elem);\n    alert(element)\n    element.remove()\n}\n\nfunction heater() {\n    sendData(\"heater\")\n    \n    //update button\n    var button = document.getElementById(\"heater_button\");\n    button.innerHTML = \"Updating...\";\n    button.disabled = true;\n}\n\nfunction pour() {\n    sendData(\"water_pump\")\n    \n    //update button\n    var button = document.getElementById(\"pump_button\");\n    button.innerHTML = \"Pouring...\";\n    button.disabled = true;\n    \n}\n\nfunction sendData(object) {\n    let url = \"https://willmishapp.eu-gb.mybluemix.net/history\";\n\n    let xhr = new XMLHttpRequest();\n    xhr.open(\"POST\", url);\n    \n    xhr.setRequestHeader(\"Accept\", \"application/json\");\n    xhr.setRequestHeader(\"Content-Type\", \"application/json\");\n    \n    xhr.onreadystatechange = function () {\n       if (xhr.readyState === 4) {\n          console.log(xhr.responseText);\n       }};\n    \n    let data = JSON.stringify({object})\n    \n    xhr.send(data);\n}\n\n</script>\n\n</body>\n</html>\n",
+        "x": 790,
+        "y": 620,
         "wires": [
             [
                 "d7cf717c7614701a"
@@ -192,18 +108,18 @@
         "type": "function",
         "z": "d4a9b32e324082e1",
         "name": "temp stats",
-        "func": "var avg = 0;\nvar max = 0;\nvar min = 9999;\nvar count = 0;\nvar sum = 0;\nvar temp =0;\n\nvar array = Object.values(msg.payload)\narray = array.sort((a, b) => (new Date(a.payload.sensor_data.timestamp) < new Date(b.payload.sensor_data.timestamp)) ? 1 : -1)\n\nvar most_recent = array[0].payload.sensor_data\nmsg.timestamp = most_recent.timestamp;\nmsg.sound = most_recent.sound;\nmsg.humi = most_recent.humi;\nmsg.illu = most_recent.illu;\nmsg.temp = most_recent.temp;\nmsg.water = most_recent.water;\n\n/*\nfor (var i in msg.payload){\n    temp = parseFloat(msg.payload[i].payload);\n    if (temp == NaN)\n        continue;\n    count += 1;\n    sum += temp;\n    if (temp > max){\n        max = temp;\n    }\n    if (temp < min){\n        min = temp;\n    }\n}\n\n\n\navg = sum / count;\n\nmsg.count = count;\nmsg.avg = avg.toFixed(2); \nmsg.max = max;\nmsg.min = min;*/\n//msg.temp = typeof(Object.values(msg.payload))\nreturn msg;",
+        "func": "var avg = 0;\nvar max = 0;\nvar min = 9999;\nvar count = 0;\nvar sum = 0;\nvar temp =0;\n\nvar array = Object.values(msg.payload)\narray = array.sort((a, b) => (new Date(a.payload.sensor_data.timestamp) < new Date(b.payload.sensor_data.timestamp)) ? 1 : -1);\nvar most_recent = array[0].payload.sensor_data\nmsg.payload = {};\nmsg.timestamp = most_recent.timestamp;\nmsg.sound = most_recent.sound;\nmsg.humi = most_recent.humi;\nmsg.illu = most_recent.illu;\nmsg.temp = most_recent.temp;\nmsg.water = most_recent.water;\n\nmsg.heater_status = flow.get(\"heater_status\");\nif (msg.heater_status == undefined) {\n    msg.heater_status = \"Error\";\n    msg.heater_button_disabled = \"disabled\";\n}\nelse if (flow.get(\"heater_status\") == \"Updating...\") {\n    msg.heater_button_disabled = \"disabled\";\n}\n\nmsg.pump_status = flow.get(\"pump_status\");\nif (msg.pump_status == undefined) {\n    msg.pump_status = \"Error\";\n    msg.pump_button_disabled = \"disabled\";\n}\nelse if (flow.get(\"pump_status\") == \"Pouring...\") {\n    msg.pump_button_disabled = \"disabled\";\n}\n\n/*\nfor (var i in msg.payload){\n    temp = parseFloat(msg.payload[i].payload);\n    if (temp == NaN)\n        continue;\n    count += 1;\n    sum += temp;\n    if (temp > max){\n        max = temp;\n    }\n    if (temp < min){\n        min = temp;\n    }\n}\n\n\n\navg = sum / count;\n\nmsg.count = count;\nmsg.avg = avg.toFixed(2); \nmsg.max = max;\nmsg.min = min;*/\n//msg.temp = typeof(Object.values(msg.payload))\nreturn msg;\n",
         "outputs": 1,
         "noerr": 0,
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 670,
-        "y": 660,
+        "x": 470,
+        "y": 620,
         "wires": [
             [
-                "0de86458b66f5fd9",
-                "d935f4b8f31c5228"
+                "d935f4b8f31c5228",
+                "6276e757bc9de8f6"
             ]
         ]
     },
@@ -218,12 +134,12 @@
         "search": "_all_",
         "design": "",
         "index": "",
-        "x": 450,
-        "y": 660,
+        "x": 290,
+        "y": 620,
         "wires": [
             [
-                "2ede16ab688c964b",
-                "0365b428b2be7228"
+                "0365b428b2be7228",
+                "2ede16ab688c964b"
             ]
         ]
     },
@@ -236,11 +152,12 @@
         "method": "get",
         "upload": false,
         "swaggerDoc": "",
-        "x": 250,
-        "y": 660,
+        "x": 110,
+        "y": 600,
         "wires": [
             [
-                "e62fce45716c28e9"
+                "e62fce45716c28e9",
+                "c0c970e23dbe6c51"
             ]
         ]
     },
@@ -271,14 +188,14 @@
         "checkall": "false",
         "repair": false,
         "outputs": 3,
-        "x": 270,
-        "y": 360,
+        "x": 310,
+        "y": 320,
         "wires": [
             [
-                "6da6fce143d44956"
+                "b9c0d91b56873e5a"
             ],
             [
-                "5c2b98be564fcf6e"
+                "0d06e55945ac415f"
             ],
             [
                 "f9e13431.747ac8"
@@ -291,23 +208,6 @@
         ]
     },
     {
-        "id": "02ace9ab128f3e9f",
-        "type": "debug",
-        "z": "d4a9b32e324082e1",
-        "name": "",
-        "active": true,
-        "tosidebar": true,
-        "console": false,
-        "tostatus": false,
-        "complete": "payload",
-        "targetType": "msg",
-        "statusVal": "",
-        "statusType": "auto",
-        "x": 450,
-        "y": 740,
-        "wires": []
-    },
-    {
         "id": "22d01919af5ea0a6",
         "type": "http in",
         "z": "d4a9b32e324082e1",
@@ -316,12 +216,13 @@
         "method": "post",
         "upload": false,
         "swaggerDoc": "",
-        "x": 270,
-        "y": 740,
+        "x": 110,
+        "y": 760,
         "wires": [
             [
-                "02ace9ab128f3e9f",
-                "46b174e2a31a76e4"
+                "081c07df56559583",
+                "46b174e2a31a76e4",
+                "a9a71af66dc1a245"
             ]
         ]
     },
@@ -331,18 +232,8 @@
         "z": "d4a9b32e324082e1",
         "name": "Returns all values in sensor_data object: temp, hum, ilu, and water_level",
         "info": "",
-        "x": 250,
-        "y": 460,
-        "wires": []
-    },
-    {
-        "id": "3380ea21a0417e47",
-        "type": "comment",
-        "z": "d4a9b32e324082e1",
-        "name": "Only move forward if data is not null",
-        "info": "",
-        "x": 240,
-        "y": 560,
+        "x": 680,
+        "y": 400,
         "wires": []
     },
     {
@@ -358,8 +249,8 @@
         "targetType": "msg",
         "statusVal": "",
         "statusType": "auto",
-        "x": 680,
-        "y": 720,
+        "x": 480,
+        "y": 660,
         "wires": []
     },
     {
@@ -381,8 +272,8 @@
         "from": "",
         "to": "",
         "reg": false,
-        "x": 720,
-        "y": 420,
+        "x": 760,
+        "y": 360,
         "wires": [
             [
                 "cd2239f341d412e8",
@@ -399,12 +290,12 @@
         "tosidebar": true,
         "console": false,
         "tostatus": false,
-        "complete": "temp",
-        "targetType": "msg",
+        "complete": "true",
+        "targetType": "full",
         "statusVal": "",
         "statusType": "auto",
-        "x": 900,
-        "y": 720,
+        "x": 670,
+        "y": 660,
         "wires": []
     },
     {
@@ -418,12 +309,12 @@
         "deviceType": "mkr1010",
         "eventCommandType": "display",
         "format": "json",
-        "data": "payload",
+        "data": "msg",
         "qos": "1",
         "name": "IBM IoT",
         "service": "registered",
         "x": 460,
-        "y": 820,
+        "y": 880,
         "wires": []
     },
     {
@@ -439,47 +330,9 @@
         "targetType": "msg",
         "statusVal": "",
         "statusType": "auto",
-        "x": 290,
-        "y": 240,
+        "x": 330,
+        "y": 440,
         "wires": []
-    },
-    {
-        "id": "6da6fce143d44956",
-        "type": "function",
-        "z": "d4a9b32e324082e1",
-        "name": "heater_status",
-        "func": "return msg;",
-        "outputs": 1,
-        "noerr": 0,
-        "initialize": "",
-        "finalize": "",
-        "libs": [],
-        "x": 440,
-        "y": 300,
-        "wires": [
-            [
-                "1c2ce3a28158a037"
-            ]
-        ]
-    },
-    {
-        "id": "5c2b98be564fcf6e",
-        "type": "function",
-        "z": "d4a9b32e324082e1",
-        "name": "pump_status",
-        "func": "return msg;",
-        "outputs": 1,
-        "noerr": 0,
-        "initialize": "",
-        "finalize": "",
-        "libs": [],
-        "x": 450,
-        "y": 360,
-        "wires": [
-            [
-                "1c2ce3a28158a037"
-            ]
-        ]
     },
     {
         "id": "196a8ef30b5d5dff",
@@ -494,52 +347,257 @@
         "targetType": "msg",
         "statusVal": "",
         "statusType": "auto",
-        "x": 990,
-        "y": 480,
+        "x": 1050,
+        "y": 420,
         "wires": []
     },
     {
-        "id": "705226d90e33cfc1",
+        "id": "b9c0d91b56873e5a",
+        "type": "function",
+        "z": "d4a9b32e324082e1",
+        "name": "heater_status",
+        "func": "if (msg.payload.heater_status) {\n    flow.set(\"heater_status\", \"On\");\n}\nelse {\n    flow.set(\"heater_status\", \"Off\");\n}",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 500,
+        "y": 280,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "22735dc992271fb0",
+        "type": "function",
+        "z": "d4a9b32e324082e1",
+        "name": "Update heater status",
+        "func": "flow.set(\"heater_status\", \"Updating...\");",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 500,
+        "y": 740,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "0d06e55945ac415f",
+        "type": "function",
+        "z": "d4a9b32e324082e1",
+        "name": "pump_status",
+        "func": "if (msg.payload.pump_status) {\n    flow.set(\"pump_status\", \"Pouring...\");\n}\nelse {\n    flow.set(\"pump_status\", \"Pour\");\n}",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 490,
+        "y": 320,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "081c07df56559583",
+        "type": "switch",
+        "z": "d4a9b32e324082e1",
+        "name": "",
+        "property": "payload.object",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "eq",
+                "v": "heater",
+                "vt": "str"
+            },
+            {
+                "t": "eq",
+                "v": "water_pump",
+                "vt": "str"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 2,
+        "x": 310,
+        "y": 760,
+        "wires": [
+            [
+                "22735dc992271fb0"
+            ],
+            [
+                "930fed75a50717ca"
+            ]
+        ]
+    },
+    {
+        "id": "930fed75a50717ca",
+        "type": "function",
+        "z": "d4a9b32e324082e1",
+        "name": "Update water pump status",
+        "func": "flow.set(\"pump_status\", \"Pouring...\");",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 520,
+        "y": 780,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "c0c970e23dbe6c51",
+        "type": "cloudant in",
+        "z": "d4a9b32e324082e1",
+        "name": "food times",
+        "cloudant": "",
+        "database": "watcop-food-times-db",
+        "service": "cool-app-cloudant-1644397982194-95552",
+        "search": "_all_",
+        "design": "",
+        "index": "",
+        "x": 290,
+        "y": 580,
+        "wires": [
+            [
+                "71d20d5a8aab7590"
+            ]
+        ]
+    },
+    {
+        "id": "de22e77464cd47cb",
         "type": "cloudant out",
         "z": "d4a9b32e324082e1",
-        "d": true,
-        "name": "watcop-actuator-values",
+        "name": "insert food time",
         "cloudant": "",
-        "database": "watcop-actuator-values",
+        "database": "watcop-food-times-db",
         "service": "cool-app-cloudant-1644397982194-95552",
         "payonly": false,
         "operation": "insert",
-        "x": 1090,
-        "y": 340,
+        "x": 760,
+        "y": 460,
         "wires": []
     },
     {
-        "id": "1c2ce3a28158a037",
-        "type": "change",
+        "id": "14fd8ee561fac2d7",
+        "type": "cloudant out",
         "z": "d4a9b32e324082e1",
-        "d": true,
+        "name": "delete food time",
+        "cloudant": "",
+        "database": "watcop-food-times-db",
+        "service": "cool-app-cloudant-1644397982194-95552",
+        "payonly": false,
+        "operation": "delete",
+        "x": 760,
+        "y": 500,
+        "wires": []
+    },
+    {
+        "id": "a9a71af66dc1a245",
+        "type": "debug",
+        "z": "d4a9b32e324082e1",
         "name": "",
-        "rules": [
-            {
-                "t": "set",
-                "p": "payload.sensor_data.timestamp",
-                "pt": "msg",
-                "to": "$now()",
-                "tot": "jsonata"
-            }
-        ],
-        "action": "",
-        "property": "",
-        "from": "",
-        "to": "",
-        "reg": false,
-        "x": 740,
-        "y": 340,
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 430,
+        "y": 1020,
+        "wires": []
+    },
+    {
+        "id": "1b323c2b20dc1c8a",
+        "type": "debug",
+        "z": "d4a9b32e324082e1",
+        "name": "",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 850,
+        "y": 560,
+        "wires": []
+    },
+    {
+        "id": "71d20d5a8aab7590",
+        "type": "function",
+        "z": "d4a9b32e324082e1",
+        "name": "",
+        "func": "var array = Object.values(msg.payload)\nmsg.payload = array;\nmsg.complete = \"monke cool\";\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 480,
+        "y": 580,
         "wires": [
             [
-                "705226d90e33cfc1"
+                "6276e757bc9de8f6",
+                "916e5be34b432d07"
             ]
         ]
+    },
+    {
+        "id": "6276e757bc9de8f6",
+        "type": "join",
+        "z": "d4a9b32e324082e1",
+        "name": "",
+        "mode": "custom",
+        "build": "merged",
+        "property": "",
+        "propertyType": "full",
+        "key": "topic",
+        "joiner": "\\n",
+        "joinerType": "str",
+        "accumulate": true,
+        "timeout": "",
+        "count": "",
+        "reduceRight": false,
+        "reduceExp": "",
+        "reduceInit": "",
+        "reduceInitType": "num",
+        "reduceFixup": "",
+        "x": 650,
+        "y": 580,
+        "wires": [
+            [
+                "1b323c2b20dc1c8a",
+                "0de86458b66f5fd9"
+            ]
+        ]
+    },
+    {
+        "id": "916e5be34b432d07",
+        "type": "debug",
+        "z": "d4a9b32e324082e1",
+        "name": "",
+        "active": false,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 570,
+        "y": 540,
+        "wires": []
     },
     {
         "id": "5a3715f5bab94757",
