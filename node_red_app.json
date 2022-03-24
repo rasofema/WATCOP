@@ -82,7 +82,7 @@
         "statusCode": "",
         "headers": {},
         "x": 950,
-        "y": 620,
+        "y": 700,
         "wires": []
     },
     {
@@ -94,9 +94,9 @@
         "fieldType": "msg",
         "format": "handlebars",
         "syntax": "mustache",
-        "template": "<html>\n    <head>\n        <meta http-equiv=\"refresh\" content=\"5\">\n         <script src=\"https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js\"></script>\n    </head>\n<body>\n        Timestamp: {{ timestamp}}<p>\n\n    Sound: {{ sound}}\n    <p>\n        \n    Humidity: {{ humi}}\n    <p>\n        \n    Light: {{ illu}}\n    <p>\n        \n    Temperature: {{ temp}}\n    <br>\n    Heater: <button id=\"heater_button\" onclick=\"heater()\" {{ heater_button_disabled}}>{{ heater_status}}</button>\n    <p>\n        \n    Water: {{ water}}\n    <br>\n    <button id=\"pump_button\" onclick=\"pour()\" {{ pump_button_disabled}}>{{ pump_status}}</button>\n    <p>\n        \n    Food Times:\n    <ul id=\"resourceList\"></ul>\n    <script>\n        let\n            resources = [\n            {\n                time: \"11:00\"\n            },\n            {\n                time: \"19:00\"\n            },\n        ]\n\n        resources.forEach(o => {\n            var entry = document.createElement('li');\n            entry.innerHTML = o.time + \" \";\n            var buttonElem = entry.appendChild(document.createElement(\"button\"));\n            buttonElem.innerHTML = \"Delete\";\n            buttonElem.onclick = function() {\n                this.parentElement.remove();\n            }\n            document.getElementById('resourceList').appendChild(entry);\n        });\n    </script>\n    <br>\n    <input name=\"name\" id=\"input_field\">\n</form>\n\n        <script>\n        console.log({{temp}})\n        function deleteTime(elem) {\n    element = document.getElementById(elem);\n    alert(element)\n    element.remove()\n}\n\nfunction heater() {\n    sendData(\"heater\")\n    \n    //update button\n    var button = document.getElementById(\"heater_button\");\n    button.innerHTML = \"Updating...\";\n    button.disabled = true;\n}\n\nfunction pour() {\n    sendData(\"water_pump\")\n    \n    //update button\n    var button = document.getElementById(\"pump_button\");\n    button.innerHTML = \"Pouring...\";\n    button.disabled = true;\n    \n}\n\nfunction sendData(object) {\n    let url = \"https://willmishapp.eu-gb.mybluemix.net/history\";\n\n    let xhr = new XMLHttpRequest();\n    xhr.open(\"POST\", url);\n    \n    xhr.setRequestHeader(\"Accept\", \"application/json\");\n    xhr.setRequestHeader(\"Content-Type\", \"application/json\");\n    \n    xhr.onreadystatechange = function () {\n       if (xhr.readyState === 4) {\n          console.log(xhr.responseText);\n       }};\n    \n    let data = JSON.stringify({object})\n    \n    xhr.send(data);\n}\n\n</script>\n\n</body>\n</html>\n",
-        "x": 790,
-        "y": 620,
+        "template": "<html>\n    <head>\n        <meta http-equiv=\"refresh\" content=\"10\">\n         <script src=\"https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js\"></script>\n    </head>\n<body>\n        Timestamp: {{timestamp}}<p>\n\n    Sound: {{sound}}\n    <p>\n        \n    Humidity: {{humi}}\n    <p>\n        \n    Light: {{illu}}\n    <p>\n        \n    Temperature: {{temp}}\n    <br>\n    Heater: <button id=\"heater_button\" onclick=\"heater()\" {{ heater_button_disabled}}>{{ heater_status}}</button>\n    <p>\n        \n    Water: {{water}}\n    <br>\n    <button id=\"pump_button\" onclick=\"pour()\" {{ pump_button_disabled}}>{{ pump_status}}</button>\n    <p>\n        \n    Food Times:\n    <ul id=\"resourceList\"></ul>\n    {{#payload.payload}}\n        <li id={{time}}>{{time}}  <button id={{_id}} name={{_rev}} onclick=\"deleteTime(this)\">Delete</button></li>\n    {{/payload.payload}}\n\n    <br>\n    New time: <input id=\"input_field\">  <button onclick=\"addFoodTime()\">Add</button>\n</form>\n\n        <script>\n        function deleteTime(elem) {\n    element = document.getElementById(elem);\n    alert(element)\n    element.remove()\n}\n\nfunction heater() {\n    sendData(\"heater\")\n    \n    //update button\n    var button = document.getElementById(\"heater_button\");\n    button.innerHTML = \"Updating...\";\n    button.disabled = true;\n}\n\nfunction pour() {\n    sendData(\"water_pump\")\n    \n    //update button\n    var button = document.getElementById(\"pump_button\");\n    button.innerHTML = \"Pouring...\";\n    button.disabled = true;\n    \n}\n\nfunction addFoodTime() {\n    var input = document.getElementById(\"input_field\");\n    var time = input.value;\n    input.value = \"\";\n    const userKeyRegExp = /^([01]\\d|2[0123]):[0-5]\\d$/;\n    if (!userKeyRegExp.test(time)) {\n        alert(\"Invalid time. Please insert a time in the format \\\"HH:mm\\\" (24h)\");\n    }\n    else {\n        if (!document.getElementById(time)) {\n            sendData({\"time\": time});\n            alert(\"New time added, please refresh the page\");\n        }\n        else {\n            alert(\"Error: time already exists\");\n        }\n    }\n}\n\nfunction deleteTime(obj) {\n    var time = obj.parentElement.id;\n    var id = obj.id;\n    var rev = obj.name;\n    obj.parentElement.remove();\n    sendData({\"delete\": time, \"_id\": id, \"_rev\": rev});\n}\n\nfunction sendData(object) {\n    let url = \"https://willmishapp.eu-gb.mybluemix.net/history\";\n\n    let xhr = new XMLHttpRequest();\n    xhr.open(\"POST\", url);\n    \n    xhr.setRequestHeader(\"Accept\", \"application/json\");\n    xhr.setRequestHeader(\"Content-Type\", \"application/json\");\n    \n    xhr.onreadystatechange = function () {\n       if (xhr.readyState === 4) {\n          console.log(xhr.responseText);\n       }};\n    \n    let data = JSON.stringify(object);\n    \n    xhr.send(data);\n}\n\n</script>\n\n</body>\n</html>\n",
+        "x": 810,
+        "y": 700,
         "wires": [
             [
                 "d7cf717c7614701a"
@@ -114,8 +114,8 @@
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 470,
-        "y": 620,
+        "x": 490,
+        "y": 720,
         "wires": [
             [
                 "d935f4b8f31c5228",
@@ -135,7 +135,7 @@
         "design": "",
         "index": "",
         "x": 290,
-        "y": 620,
+        "y": 720,
         "wires": [
             [
                 "0365b428b2be7228",
@@ -153,7 +153,7 @@
         "upload": false,
         "swaggerDoc": "",
         "x": 110,
-        "y": 600,
+        "y": 700,
         "wires": [
             [
                 "e62fce45716c28e9",
@@ -217,7 +217,7 @@
         "upload": false,
         "swaggerDoc": "",
         "x": 110,
-        "y": 760,
+        "y": 900,
         "wires": [
             [
                 "081c07df56559583",
@@ -249,8 +249,8 @@
         "targetType": "msg",
         "statusVal": "",
         "statusType": "auto",
-        "x": 480,
-        "y": 660,
+        "x": 540,
+        "y": 800,
         "wires": []
     },
     {
@@ -294,8 +294,8 @@
         "targetType": "full",
         "statusVal": "",
         "statusType": "auto",
-        "x": 670,
-        "y": 660,
+        "x": 770,
+        "y": 800,
         "wires": []
     },
     {
@@ -313,8 +313,8 @@
         "qos": "1",
         "name": "IBM IoT",
         "service": "registered",
-        "x": 460,
-        "y": 880,
+        "x": 320,
+        "y": 900,
         "wires": []
     },
     {
@@ -369,23 +369,6 @@
         ]
     },
     {
-        "id": "22735dc992271fb0",
-        "type": "function",
-        "z": "d4a9b32e324082e1",
-        "name": "Update heater status",
-        "func": "flow.set(\"heater_status\", \"Updating...\");",
-        "outputs": 1,
-        "noerr": 0,
-        "initialize": "",
-        "finalize": "",
-        "libs": [],
-        "x": 500,
-        "y": 740,
-        "wires": [
-            []
-        ]
-    },
-    {
         "id": "0d06e55945ac415f",
         "type": "function",
         "z": "d4a9b32e324082e1",
@@ -407,49 +390,40 @@
         "type": "switch",
         "z": "d4a9b32e324082e1",
         "name": "",
-        "property": "payload.object",
+        "property": "payload",
         "propertyType": "msg",
         "rules": [
             {
-                "t": "eq",
-                "v": "heater",
+                "t": "hask",
+                "v": "object",
                 "vt": "str"
             },
             {
-                "t": "eq",
-                "v": "water_pump",
+                "t": "hask",
+                "v": "time",
+                "vt": "str"
+            },
+            {
+                "t": "hask",
+                "v": "delete",
                 "vt": "str"
             }
         ],
         "checkall": "true",
         "repair": false,
-        "outputs": 2,
+        "outputs": 3,
         "x": 310,
-        "y": 760,
+        "y": 980,
         "wires": [
             [
-                "22735dc992271fb0"
+                "de152227dd119303"
             ],
             [
-                "930fed75a50717ca"
+                "de22e77464cd47cb"
+            ],
+            [
+                "14fd8ee561fac2d7"
             ]
-        ]
-    },
-    {
-        "id": "930fed75a50717ca",
-        "type": "function",
-        "z": "d4a9b32e324082e1",
-        "name": "Update water pump status",
-        "func": "flow.set(\"pump_status\", \"Pouring...\");",
-        "outputs": 1,
-        "noerr": 0,
-        "initialize": "",
-        "finalize": "",
-        "libs": [],
-        "x": 520,
-        "y": 780,
-        "wires": [
-            []
         ]
     },
     {
@@ -464,7 +438,7 @@
         "design": "",
         "index": "",
         "x": 290,
-        "y": 580,
+        "y": 680,
         "wires": [
             [
                 "71d20d5a8aab7590"
@@ -479,10 +453,10 @@
         "cloudant": "",
         "database": "watcop-food-times-db",
         "service": "cool-app-cloudant-1644397982194-95552",
-        "payonly": false,
+        "payonly": true,
         "operation": "insert",
-        "x": 760,
-        "y": 460,
+        "x": 480,
+        "y": 980,
         "wires": []
     },
     {
@@ -495,8 +469,8 @@
         "service": "cool-app-cloudant-1644397982194-95552",
         "payonly": false,
         "operation": "delete",
-        "x": 760,
-        "y": 500,
+        "x": 480,
+        "y": 1020,
         "wires": []
     },
     {
@@ -512,8 +486,8 @@
         "targetType": "msg",
         "statusVal": "",
         "statusType": "auto",
-        "x": 430,
-        "y": 1020,
+        "x": 330,
+        "y": 840,
         "wires": []
     },
     {
@@ -529,8 +503,8 @@
         "targetType": "msg",
         "statusVal": "",
         "statusType": "auto",
-        "x": 850,
-        "y": 560,
+        "x": 890,
+        "y": 600,
         "wires": []
     },
     {
@@ -538,14 +512,14 @@
         "type": "function",
         "z": "d4a9b32e324082e1",
         "name": "",
-        "func": "var array = Object.values(msg.payload)\nmsg.payload = array;\nmsg.complete = \"monke cool\";\nreturn msg;",
+        "func": "var array = Object.values(msg.payload);\nmsg.payload = array;\nmsg.complete = \"monke cool\";\nreturn msg;",
         "outputs": 1,
         "noerr": 0,
         "initialize": "",
         "finalize": "",
         "libs": [],
         "x": 480,
-        "y": 580,
+        "y": 680,
         "wires": [
             [
                 "6276e757bc9de8f6",
@@ -574,7 +548,7 @@
         "reduceInitType": "num",
         "reduceFixup": "",
         "x": 650,
-        "y": 580,
+        "y": 700,
         "wires": [
             [
                 "1b323c2b20dc1c8a",
@@ -595,8 +569,169 @@
         "targetType": "msg",
         "statusVal": "",
         "statusType": "auto",
-        "x": 570,
-        "y": 540,
+        "x": 690,
+        "y": 600,
+        "wires": []
+    },
+    {
+        "id": "f9573119ffe39fee",
+        "type": "function",
+        "z": "d4a9b32e324082e1",
+        "name": "Update heater status",
+        "func": "flow.set(\"heater_status\", \"Updating...\");",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 680,
+        "y": 920,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "de152227dd119303",
+        "type": "switch",
+        "z": "d4a9b32e324082e1",
+        "name": "",
+        "property": "payload.object",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "eq",
+                "v": "heater",
+                "vt": "str"
+            },
+            {
+                "t": "eq",
+                "v": "water_pump",
+                "vt": "str"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 2,
+        "x": 450,
+        "y": 940,
+        "wires": [
+            [
+                "f9573119ffe39fee"
+            ],
+            [
+                "0431d8c59fcd1d71"
+            ]
+        ]
+    },
+    {
+        "id": "0431d8c59fcd1d71",
+        "type": "function",
+        "z": "d4a9b32e324082e1",
+        "name": "Update water pump status",
+        "func": "flow.set(\"pump_status\", \"Pouring...\");",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 700,
+        "y": 960,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "6ae15cda99175bdc",
+        "type": "inject",
+        "z": "d4a9b32e324082e1",
+        "name": "Every minute",
+        "props": [],
+        "repeat": "60",
+        "crontab": "",
+        "once": true,
+        "onceDelay": 0.1,
+        "topic": "",
+        "x": 120,
+        "y": 1100,
+        "wires": [
+            [
+                "965a1206df52c1d5"
+            ]
+        ]
+    },
+    {
+        "id": "4bef76d63dce52d9",
+        "type": "function",
+        "z": "d4a9b32e324082e1",
+        "name": "Check time",
+        "func": "var now = new Date();\nvar array = msg.payload;\n\nfor (var i = 0; i < array.length; i++) {\n    if (now.getHours() == array[i].time.substring(0,2) &&\n        now.getMinutes() == array[i].time.substring(3)) {\n        return array[i];\n    }\n}\n\n",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 490,
+        "y": 1100,
+        "wires": [
+            [
+                "e0029fc45d795169",
+                "146ffc5e96c33731"
+            ]
+        ]
+    },
+    {
+        "id": "965a1206df52c1d5",
+        "type": "cloudant in",
+        "z": "d4a9b32e324082e1",
+        "name": "food times",
+        "cloudant": "",
+        "database": "watcop-food-times-db",
+        "service": "cool-app-cloudant-1644397982194-95552",
+        "search": "_all_",
+        "design": "",
+        "index": "",
+        "x": 310,
+        "y": 1100,
+        "wires": [
+            [
+                "4bef76d63dce52d9"
+            ]
+        ]
+    },
+    {
+        "id": "146ffc5e96c33731",
+        "type": "ibmiot out",
+        "z": "d4a9b32e324082e1",
+        "authentication": "apiKey",
+        "apiKey": "5a3715f5bab94757",
+        "outputType": "cmd",
+        "deviceId": "9C9C1FC187E0",
+        "deviceType": "mkr1010",
+        "eventCommandType": "display",
+        "format": "json",
+        "data": "msg",
+        "qos": "1",
+        "name": "IBM IoT",
+        "service": "registered",
+        "x": 680,
+        "y": 1100,
+        "wires": []
+    },
+    {
+        "id": "e0029fc45d795169",
+        "type": "debug",
+        "z": "d4a9b32e324082e1",
+        "name": "",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 670,
+        "y": 1160,
         "wires": []
     },
     {
