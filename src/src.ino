@@ -58,17 +58,27 @@ void callback(char* topic, byte* payload, unsigned int length) {
     Serial.println(error.f_str());
     return;
   }
+  Serial.println((const char*)callbackDoc["heater"]);
   // Check whether the sent message is heater
-  if (strcmp(((const char*) callbackDoc["object"]), "heater") == 0)
+  if (callbackDoc.containsKey("heater"))
   {
-    heater_status = !heater_status;
+      // If heater status is On, that means it is currently on and need to be toggled off
+    if (strcmp((const char*) callbackDoc["heater"], "On") == 0)
+        heater_status = false;
+    else
+        heater_status = true;
+    Serial.println(heater_status);
     sendHeaterStatus();
     return;
   }
   // Check whether the sent message is pump 
-  if (strcmp(((const char*) callbackDoc["object"]), "water_pump") == 0)
+  if (callbackDoc.containsKey("water_pump"))
   {
-    pump_status = !pump_status;
+    if (strcmp((const char*) callbackDoc["water_pump"], "Pour") == 0)
+        pump_status = true;
+    else
+        pump_status = false;
+    Serial.println(pump_status);
     sendPumpStatus();
     return;
   }
@@ -144,6 +154,7 @@ void loop() {
   }
 
   // Pause - but keep polling MQTT for incoming messages
+  // TODO may want to move this to a different thread/decrease the delay
   for (int i = 0; i < 4; i++) {
     mqtt.loop();
     delay(1000);
