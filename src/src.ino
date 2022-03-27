@@ -10,10 +10,16 @@
 
 // Timer lib
 #include <SAMDTimerInterrupt.h>
-//#include <SAMDTimerInterrupt.hpp>
-//#include <SAMD_ISR_Timer.h>
-//#include <SAMD_ISR_Timer.hpp>
-#define DEBUG 2
+#include <SAMD_ISR_Timer.h>
+
+// 0: no log messages, 1: safe log messages, 2: halting log messages
+#define DEBUG                         2
+// Time in MS the pump is on after receiving MQTT msg
+#define PUMP_ON_TIME                  5000L
+// MAX Time in MS the heater is on after receiving MQTT msg (if not turned off by user before)
+#define HEATER_TIMEOUT                30*1000L
+// Interval of the main HW Clock in MS
+#define HW_TIMER_INTERVAL_MS          50L
 
 const int JSON_SIZE = 1000;
 
@@ -24,7 +30,7 @@ const int BUZZER_PIN = A1;
 const int WATER_LEVEL_PIN = A2;
 const int MOTOR_PIN = A3;
 
-bool heater_status = false;
+volatile bool heater_status = false;
 volatile bool pump_status = false;
 volatile uint32_t preMillisTimer = 0;
 
@@ -54,9 +60,19 @@ DeserializationError error;
 // ---------------------------------------------
 
 // ------------------ Timer Objects ------------
-SAMDTimerInterrupt pump_timer(TIMER_TCC);
+// Main timer
+SAMDTimerInterrupt ITimer0(TIMER_TCC);
+// SAMD ISR timers, use main timer for up to 16 timers
+SAMD_ISR_Timer ISR_Timer;
+
+void TimerHandler();
 void pumpTimerHandler();
 // ---------------------------------------------
+
+void TimerHandler()
+{
+    ISR_Timer.run();
+}
 
 void pumpTimerHandler()
 {
@@ -67,8 +83,17 @@ void pumpTimerHandler()
 #endif
     pump_status = false;
     digitalWrite(WATER_PUMP_PIN, LOW);
-    pump_timer.detachInterrupt();
     sendPumpStatus();
+}
+
+void heaterTimerHandler()
+{
+#if (DEBUG > 1)
+    Serial.println("Disabling heater! too long on!");
+#endif
+    heater_status = false;
+    digitalWrite(HEATER_PIN, LOW);
+    sendHeaterStatus();
 }
 
 void callback(char* topic, byte* payload, unsigned int length) {
@@ -101,7 +126,11 @@ void callback(char* topic, byte* payload, unsigned int length) {
     if (strcmp((const char*) callbackDoc["heater"], "On") == 0)
         heater_status = false;
     else
+    {
         heater_status = true;
+        // set a safety timeout, triggering after HEATER_TIMEOUT MS
+        ISR_Timer.setTimeout(HEATER_TIMEOUT, heaterTimerHandler);
+    }
 #if (DEBUG > 0)
     Serial.println(heater_status);
 #endif
@@ -116,7 +145,7 @@ void callback(char* topic, byte* payload, unsigned int length) {
         pump_status = true;
         preMillisTimer = millis();
         digitalWrite(WATER_PUMP_PIN,HIGH);
-        pump_timer.attachInterruptInterval(1000 * PUMP_ON_TIME, pumpTimerHandler);
+        ISR_Timer.setTimeout(PUMP_ON_TIME, pumpTimerHandler);
     }
     else
         pump_status = false;
@@ -167,8 +196,8 @@ void setup() {
 
 
   sendHeaterStatus();
-  
   sendPumpStatus();
+  ITimer0.attachInterruptInterval(HW_TIMER_INTERVAL_MS * 1000, TimerHandler);
 }
 
 
