@@ -8,6 +8,13 @@
 #include <PubSubClient.h>
 #include <Arduino_MKRENV.h>
 
+// Timer lib
+#include <SAMDTimerInterrupt.h>
+//#include <SAMDTimerInterrupt.hpp>
+//#include <SAMD_ISR_Timer.h>
+//#include <SAMD_ISR_Timer.hpp>
+#define DEBUG 1
+
 const int JSON_SIZE = 1000;
 
 const int HEATER_PIN = 0;
@@ -18,18 +25,18 @@ const int WATER_LEVEL_PIN = A2;
 const int MOTOR_PIN = A3;
 
 bool heater_status = false;
-bool pump_status = false;
+volatile bool pump_status = false;
 
-// MQTT objects
+// ------------ MQTT objects ------------------
+void connectToMQTT();
 void callback(char* topic, byte* payload, unsigned int length);
 void sendHeaterStatus();
 void sendPumpStatus();
-
-void connectToMQTT();
 WiFiClient wifiClient;
 PubSubClient mqtt(MQTT_HOST, MQTT_PORT, callback, wifiClient);
+// ---------------------------------------------
 
-// variables to hold data
+// ----------------- JSON variables ------------
 StaticJsonDocument<JSON_SIZE> jsonDoc;
 JsonObject payload = jsonDoc.to<JsonObject>();
 JsonObject status = payload.createNestedObject("sensor_data");
@@ -43,22 +50,47 @@ JsonObject payloadPump = jsonDocPump.to<JsonObject>();
 static char msg[JSON_SIZE];
 StaticJsonDocument<128> callbackDoc;
 DeserializationError error;
+// ---------------------------------------------
+
+// ------------------ Timer Objects ------------
+SAMDTimerInterrupt pump_timer(TIMER_TCC);
+void pumpTimerHandler();
+// ---------------------------------------------
+
+void pumpTimerHandler()
+{
+#if (DEBUG > 1)
+    Serial.println("Disabling pump!");
+#endif
+    pump_status = false;
+    digitalWrite(WATER_PUMP_PIN, LOW);
+    pump_timer.stopTimer();
+    sendPumpStatus();
+}
 
 void callback(char* topic, byte* payload, unsigned int length) {
   // handle message arrived
+#if (DEBUG > 0)
   Serial.print("Message arrived [");
   Serial.print(topic);
   Serial.print("] : ");
+#endif
 
   payload[length] = 0; // ensure valid content is zero terminated so can treat as c-string
+#if (DEBUG > 0)
   Serial.println((char *)payload);
+#endif
   error = deserializeJson(callbackDoc, (char *) payload);
   if (error) {
+#if (DEBUG > 0)
     Serial.print(F("deserializeJson() failed: "));
     Serial.println(error.f_str());
+#endif
     return;
   }
+#if (DEBUG > 0)
   Serial.println((const char*)callbackDoc["heater"]);
+#endif
   // Check whether the sent message is heater
   if (callbackDoc.containsKey("heater"))
   {
@@ -67,7 +99,9 @@ void callback(char* topic, byte* payload, unsigned int length) {
         heater_status = false;
     else
         heater_status = true;
+#if (DEBUG > 0)
     Serial.println(heater_status);
+#endif
     sendHeaterStatus();
     return;
   }
@@ -75,10 +109,15 @@ void callback(char* topic, byte* payload, unsigned int length) {
   if (callbackDoc.containsKey("water_pump"))
   {
     if (strcmp((const char*) callbackDoc["water_pump"], "Pour") == 0)
+    {
         pump_status = true;
+        pump_timer.restartTimer();
+    }
     else
         pump_status = false;
+#if (DEBUG > 0)
     Serial.println(pump_status);
+#endif
     sendPumpStatus();
     return;
   }
@@ -87,19 +126,23 @@ void callback(char* topic, byte* payload, unsigned int length) {
 void sendHeaterStatus() {
   payloadHeater["heater_status"] = heater_status;
   serializeJson(jsonDocHeater, msg, JSON_SIZE);
+#if (DEBUG > 0)
   Serial.println(msg);
   if (!mqtt.publish(MQTT_TOPIC, msg)) {
    Serial.println("MQTT Publish failed");
   }
+#endif
 }
 
 void sendPumpStatus() {
   payloadPump["pump_status"] = pump_status;
   serializeJson(jsonDocPump, msg, JSON_SIZE);
+#if (DEBUG > 0)
   Serial.println(msg);
   if (!mqtt.publish(MQTT_TOPIC, msg)) {
    Serial.println("MQTT Publish failed");
   }
+#endif
 }
 
 void setup() {
@@ -121,6 +164,9 @@ void setup() {
   sendHeaterStatus();
   
   sendPumpStatus();
+  // Interrupt interval is in microseconds
+  pump_timer.attachInterruptInterval(1000 * PUMP_ON_TIME, pumpTimerHandler);
+  pump_timer.stopTimer();
 }
 
 
@@ -134,7 +180,9 @@ void loop() {
 
   // Check if any reads failed
   if (isnan(temp) || isnan(humi) || isnan(illu)) {
+#if (DEBUG > 0)
     Serial.println("Failed to read data!");
+#endif
   } else {
 
     // Prepare data
@@ -145,12 +193,13 @@ void loop() {
     status["water"] = water;
 
     serializeJson(jsonDoc, msg, JSON_SIZE);
+#if (DEBUG > 0)
     Serial.println(msg);
-
     // Send data to Watson IoT Platform
     if (!mqtt.publish(MQTT_TOPIC, msg)) {
       Serial.println("MQTT Publish failed");
     }
+#endif
   }
 
   // Pause - but keep polling MQTT for incoming messages
@@ -175,16 +224,18 @@ void loop() {
   connectToMQTT();
 }
 
-
-
 void connectToMQTT() {
   while (!mqtt.connected()) {
     if (mqtt.connect(MQTT_DEVICEID, MQTT_USER, MQTT_TOKEN)) {
+#if (DEBUG > 0)
       Serial.println("MQTT Connected");
+#endif
       mqtt.subscribe(MQTT_TOPIC_DISPLAY);
       mqtt.loop();
     } else {
+#if (DEBUG > 0)
       Serial.println("MQTT Failed to connect!");
+#endif
       delay(5000);
     }
   }
