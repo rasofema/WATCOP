@@ -13,7 +13,7 @@
 //#include <SAMDTimerInterrupt.hpp>
 //#include <SAMD_ISR_Timer.h>
 //#include <SAMD_ISR_Timer.hpp>
-#define DEBUG 1
+#define DEBUG 2
 
 const int JSON_SIZE = 1000;
 
@@ -26,6 +26,7 @@ const int MOTOR_PIN = A3;
 
 bool heater_status = false;
 volatile bool pump_status = false;
+volatile uint32_t preMillisTimer = 0;
 
 // ------------ MQTT objects ------------------
 void connectToMQTT();
@@ -60,11 +61,13 @@ void pumpTimerHandler();
 void pumpTimerHandler()
 {
 #if (DEBUG > 1)
+    Serial.println(millis()-preMillisTimer);
+    preMillisTimer = millis();
     Serial.println("Disabling pump!");
 #endif
     pump_status = false;
     digitalWrite(WATER_PUMP_PIN, LOW);
-    pump_timer.stopTimer();
+    pump_timer.detachInterrupt();
     sendPumpStatus();
 }
 
@@ -111,7 +114,9 @@ void callback(char* topic, byte* payload, unsigned int length) {
     if (strcmp((const char*) callbackDoc["water_pump"], "Pour") == 0)
     {
         pump_status = true;
-        pump_timer.restartTimer();
+        preMillisTimer = millis();
+        digitalWrite(WATER_PUMP_PIN,HIGH);
+        pump_timer.attachInterruptInterval(1000 * PUMP_ON_TIME, pumpTimerHandler);
     }
     else
         pump_status = false;
@@ -164,9 +169,6 @@ void setup() {
   sendHeaterStatus();
   
   sendPumpStatus();
-  // Interrupt interval is in microseconds
-  pump_timer.attachInterruptInterval(1000 * PUMP_ON_TIME, pumpTimerHandler);
-  pump_timer.stopTimer();
 }
 
 
