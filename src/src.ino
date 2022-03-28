@@ -88,6 +88,14 @@ void heaterTimerHandler()
     sendHeaterStatus();
 }
 
+void foodDispenserTimerHandler()
+{
+#if (DEBUG > 1)
+    Serial.println("Stopping food dispenser!");
+#endif
+
+}
+
 void callback(char* topic, byte* payload, unsigned int length) {
   // handle message arrived
 #if (DEBUG > 0)
@@ -151,8 +159,9 @@ void callback(char* topic, byte* payload, unsigned int length) {
     sendHeaterStatus();
     return;
   }
+
   // Check whether the sent message is pump 
-  if (callbackDoc.containsKey("water_pump"))
+  else if (callbackDoc.containsKey("water_pump"))
   {
     if (strcmp((const char*) callbackDoc["water_pump"], "Pour") == 0)
     {
@@ -176,6 +185,15 @@ void callback(char* topic, byte* payload, unsigned int length) {
 #endif
     sendPumpStatus();
     return;
+  }
+
+  // Check whethert the sent message is dispense_food
+  if (callbackDoc.containsKey("dispense_food"))
+  {
+    if (strcmp((const char*) callbackDoc["dispense_food"], "dispense_food") == 0)
+    {
+        Serial.println("Dispensing foood!!!!");
+    }
   }
 }
 

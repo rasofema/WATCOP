@@ -42,6 +42,7 @@ bool isWaterContainerEmpty();
 volatile int heaterTimerId = -1; // Stores the id of the current heaterTimer interrupt
 volatile bool heater_status = false;
 volatile bool pump_status = false;
+volatile bool food_dispenser_status = false;
 volatile uint32_t preMillisTimer = 0;
 
 // ------------ MQTT related vars ------------------
@@ -76,4 +77,5 @@ SAMDTimerInterrupt ITimer0(TIMER_TCC);
 SAMD_ISR_Timer ISR_Timer;
 void TimerHandler();
 void pumpTimerHandler();
+void foodDispenserTimerHandler();
 // ---------------------------------------------
