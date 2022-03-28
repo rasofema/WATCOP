@@ -30,6 +30,8 @@ const int BUZZER_PIN = A1;
 const int WATER_LEVEL_PIN = A2;
 const int MOTOR_PIN = A3;
 
+// Values modifed by Interrupts
+volatile int heaterTimerId = -1; // Stores the id of the current heaterTimer interrupt
 volatile bool heater_status = false;
 volatile bool pump_status = false;
 volatile uint32_t preMillisTimer = 0;
@@ -91,6 +93,7 @@ void heaterTimerHandler()
 #if (DEBUG > 1)
     Serial.println("Disabling heater! too long on!");
 #endif
+    heaterTimerId = -1; // Reset the timerId to -1, so other timers dont get accidentially removed
     heater_status = false;
     digitalWrite(HEATER_PIN, LOW);
     sendHeaterStatus();
@@ -122,14 +125,35 @@ void callback(char* topic, byte* payload, unsigned int length) {
   // Check whether the sent message is heater
   if (callbackDoc.containsKey("heater"))
   {
-      // If heater status is On, that means it is currently on and need to be toggled off
-    if (strcmp((const char*) callbackDoc["heater"], "On") == 0)
-        heater_status = false;
-    else
+      // If heater msg is Off, that means it is currently off and need to be toggled on
+    if (strcmp((const char*) callbackDoc["heater"], "Off") == 0)
     {
         heater_status = true;
+        // In case the Arduino somehow receives two 'Off' messages (e.g. bug on website),
+        // Handle it gracefully, and remove previous timer
+        if (heaterTimerId != -1)
+        {
+#if (DEBUG > 1)
+            Serial.println("Removing heaterTimer interupt!");
+#endif
+            ISR_Timer.deleteTimer(heaterTimerId);
+            heaterTimerId = -1;
+        }
         // set a safety timeout, triggering after HEATER_TIMEOUT MS
-        ISR_Timer.setTimeout(HEATER_TIMEOUT, heaterTimerHandler);
+        heaterTimerId = ISR_Timer.setTimeout(HEATER_TIMEOUT, heaterTimerHandler);
+        digitalWrite(HEATER_PIN,HIGH);
+    }
+    else
+    {
+        heater_status = false;
+        if (heaterTimerId != -1)
+        {
+#if (DEBUG > 1)
+            Serial.println("Removing heaterTimer interupt!");
+#endif
+            ISR_Timer.deleteTimer(heaterTimerId);
+            heaterTimerId = -1;
+        }
     }
 #if (DEBUG > 0)
     Serial.println(heater_status);
