@@ -221,7 +221,8 @@
         "wires": [
             [
                 "081c07df56559583",
-                "a9a71af66dc1a245"
+                "a9a71af66dc1a245",
+                "46b174e2a31a76e4"
             ]
         ]
     },
@@ -364,7 +365,9 @@
         "x": 500,
         "y": 280,
         "wires": [
-            []
+            [
+                "246d4f49272a1ddc"
+            ]
         ]
     },
     {
@@ -381,7 +384,9 @@
         "x": 490,
         "y": 320,
         "wires": [
-            []
+            [
+                "246d4f49272a1ddc"
+            ]
         ]
     },
     {
@@ -519,7 +524,7 @@
         "type": "function",
         "z": "d4a9b32e324082e1",
         "name": "Extract food times and add flow vars",
-        "func": "var array = Object.values(msg.payload);\nmsg.payload = array;\n//msg.heater_status = flow.get(\"heater_status\")\nmsg.complete = \"monke cool\";\nreturn msg;",
+        "func": "var array = Object.values(msg.payload);\nmsg.payload = array;\nmsg.complete = \"monke cool\";\nreturn msg;",
         "outputs": 1,
         "noerr": 0,
         "initialize": "",
@@ -619,7 +624,7 @@
         "type": "function",
         "z": "d4a9b32e324082e1",
         "name": "Check time",
-        "func": "//var now = new Date();\nvar array = msg.payload;\n        return {payload:JSON.stringify(\"dispense_food\")};\n\nfor (var i = 0; i < array.length; i++) {\n    if (now.getHours() == array[i].time.substring(0,2) &&\n        now.getMinutes() == array[i].time.substring(3)) {\n        return JSON.stringify(\"dispense_food\");\n    }\n}\n\n",
+        "func": "var now = new Date();\nvar array = msg.payload;\nfor (var i = 0; i < array.length; i++) {\n    if (now.getHours() == array[i].time.substring(0,2) &&\n        now.getMinutes() == array[i].time.substring(3)) {\n            \n        return {payload:{dispense_food:\"dispense_food\"}};\n    }\n}\n\n",
         "outputs": 1,
         "noerr": 0,
         "initialize": "",
@@ -629,7 +634,8 @@
         "y": 1140,
         "wires": [
             [
-                "c95f50accc096a74"
+                "146ffc5e96c33731",
+                "e0029fc45d795169"
             ]
         ]
     },
@@ -688,7 +694,7 @@
         "z": "d4a9b32e324082e1",
         "name": "Every minute",
         "props": [],
-        "repeat": "3",
+        "repeat": "60",
         "crontab": "",
         "once": false,
         "onceDelay": 0.1,
@@ -706,7 +712,7 @@
         "type": "debug",
         "z": "d4a9b32e324082e1",
         "name": "",
-        "active": false,
+        "active": true,
         "tosidebar": true,
         "console": false,
         "tostatus": false,
@@ -746,20 +752,21 @@
         "wires": []
     },
     {
-        "id": "c95f50accc096a74",
-        "type": "json",
+        "id": "246d4f49272a1ddc",
+        "type": "debug",
         "z": "d4a9b32e324082e1",
-        "name": "",
-        "property": "payload",
-        "action": "",
-        "pretty": false,
-        "x": 690,
-        "y": 1140,
-        "wires": [
-            [
-                "e0029fc45d795169"
-            ]
-        ]
+        "name": "device data",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 770,
+        "y": 260,
+        "wires": []
     },
     {
         "id": "5a3715f5bab94757",
