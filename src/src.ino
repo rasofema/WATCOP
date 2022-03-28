@@ -57,6 +57,7 @@ int getWaterLevelReading()
         delay(READING_INTERVAL);
     }
     return avg/WATER_LEVEL_SENSOR_READINGS;
+
 }
 
 
@@ -93,7 +94,7 @@ void foodDispenserTimerHandler()
 #if (DEBUG > 1)
     Serial.println("Stopping food dispenser!");
 #endif
-
+    food_dispenser_servo.write(SERVO_CLOSED_POS);
 }
 
 void callback(char* topic, byte* payload, unsigned int length) {
@@ -192,7 +193,11 @@ void callback(char* topic, byte* payload, unsigned int length) {
   {
     if (strcmp((const char*) callbackDoc["dispense_food"], "dispense_food") == 0)
     {
-        Serial.println("Dispensing foood!!!!");
+#if (DEBUG > 1)
+        Serial.println("Dispensing food!!!!");
+#endif
+        food_dispenser_servo.write(SERVO_OPEN_POS);
+        ISR_Timer.setTimeout(FOOD_DISPENSING_TIMEOUT, foodDispenserTimerHandler);
     }
   }
 }
@@ -225,7 +230,8 @@ void setup() {
   pinMode(WATER_PUMP_PIN,OUTPUT);
   pinMode(HEATER_PIN,OUTPUT);
   pinMode(BUZZER_PIN,OUTPUT);
-  pinMode(MOTOR_PIN,OUTPUT);
+  food_dispenser_servo.attach(MOTOR_PIN);
+  food_dispenser_servo.write(SERVO_CLOSED_POS); // reset servo position
   
   initialiseSerial();
   checkENVShieldInitialisation();
@@ -247,7 +253,8 @@ void loop() {
   float humi = ENV.readHumidity();
   float illu = ENV.readIlluminance();
   int sound = analogRead(MIC_PIN);
-  float water = getWaterLevelReading();
+    // get avg and map to 0-100 %
+  float water = map(getWaterLevelReading(), 0, WATER_SENSOR_MAX_VAL, 0, 100); //actual max should be close to 1023
 
   // Check if any reads failed
   if (isnan(temp) || isnan(humi) || isnan(illu)) {
