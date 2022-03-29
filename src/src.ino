@@ -196,9 +196,29 @@ void callback(char* topic, byte* payload, unsigned int length) {
 #if (DEBUG > 1)
         Serial.println("Dispensing food!!!!");
 #endif
-        food_dispenser_servo.write(SERVO_OPEN_POS);
+    delay(1000);
+    tone(BUZZER_PIN,800);            
+    delay(500);
+    noTone(BUZZER_PIN);
+    
+    int pos;
+    for (pos = 0; pos <= 30; pos += 1) {  // goes from 0 degrees to 30 degrees
+      // in steps of 1 degree
+      food_dispenser_servo.write(pos);    // tell servo to go to position in variable 'pos'
+      delay(80);                          // waits 80ms for the servo to reach the position
+    }
+  
+    for (pos = 30; pos >= 0; pos -= 1) {  // goes from 30 degrees to 0 degrees
+      food_dispenser_servo.write(pos);    // tell servo to go to position in variable 'pos'
+      delay(80);                          // waits 80ms for the servo to reach the position
+    }
         ISR_Timer.setTimeout(FOOD_DISPENSING_TIMEOUT, foodDispenserTimerHandler);
     }
+    
+    delay(1000);
+    tone(BUZZER_PIN,800);            
+    delay(500);
+    noTone(BUZZER_PIN);
   }
 }
 
