@@ -32,12 +32,11 @@
         "allCommands": "",
         "allFormats": "",
         "qos": "0",
-        "x": 120,
+        "x": 160,
         "y": 320,
         "wires": [
             [
-                "173a577e881643a6",
-                "d65eb96086ba96e1"
+                "173a577e881643a6"
             ]
         ]
     },
@@ -56,7 +55,8 @@
         "y": 360,
         "wires": [
             [
-                "b45762f841ae061a"
+                "b45762f841ae061a",
+                "246d4f49272a1ddc"
             ]
         ]
     },
@@ -70,7 +70,7 @@
         "service": "cool-app-cloudant-1644397982194-95552",
         "payonly": false,
         "operation": "insert",
-        "x": 1050,
+        "x": 1030,
         "y": 360,
         "wires": []
     },
@@ -81,8 +81,8 @@
         "name": "",
         "statusCode": "",
         "headers": {},
-        "x": 1170,
-        "y": 680,
+        "x": 2330,
+        "y": 300,
         "wires": []
     },
     {
@@ -95,8 +95,8 @@
         "format": "handlebars",
         "syntax": "mustache",
         "template": "<html>\n    <head>\n        <meta http-equiv=\"refresh\" content=\"10\">\n         <script src=\"https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js\"></script>\n    </head>\n<body>\n        Timestamp: {{timestamp}}<p>\n\n    Sound: {{sound}}\n    <p>\n        \n    Humidity: {{humi}}\n    <p>\n        \n    Light: {{illu}}\n    <p>\n        \n    Temperature: {{temp}}\n    <br>\n    Heater: <button id=\"heater_button\" onclick=\"heater()\" {{ heater_button_disabled}}>{{ heater_status}}</button>\n    <p>\n        \n    Water: {{water}}\n    <br>\n    <button id=\"pump_button\" onclick=\"pour()\" {{ pump_button_disabled}}>{{ pump_status}}</button>\n    <p>\n        \n    Food Times:\n    <ul id=\"resourceList\"></ul>\n    {{#payload.payload}}\n        <li id={{time}}>{{time}}  <button id={{_id}} name={{_rev}} onclick=\"deleteTime(this)\">Delete</button></li>\n    {{/payload.payload}}\n\n    <br>\n    New time: <input id=\"input_field\">  <button onclick=\"addFoodTime()\">Add</button>\n</form>\n\n        <script>\n        function deleteTime(elem) {\n    element = document.getElementById(elem);\n    alert(element)\n    element.remove()\n}\n\nfunction heater() {\n    sendData({\"heater\":\"{{heater_status}}\"})\n    \n    //update button\n    var button = document.getElementById(\"heater_button\");\n    button.innerHTML = \"Updating...\";\n    button.disabled = true;\n}\n\nfunction pour() {\n    sendData({\"water_pump\":\"{{pump_status}}\"})\n\n    //update button\n    var button = document.getElementById(\"pump_button\");\n    button.innerHTML = \"Pouring...\";\n    button.disabled = true;\n    \n}\n\nfunction addFoodTime() {\n    var input = document.getElementById(\"input_field\");\n    var time = input.value;\n    input.value = \"\";\n    const userKeyRegExp = /^([01]\\d|2[0123]):[0-5]\\d$/;\n    if (!userKeyRegExp.test(time)) {\n        alert(\"Invalid time. Please insert a time in the format \\\"HH:mm\\\" (24h)\");\n    }\n    else {\n        if (!document.getElementById(time)) {\n            sendData({\"time\": time});\n            alert(\"New time added, please refresh the page\");\n        }\n        else {\n            alert(\"Error: time already exists\");\n        }\n    }\n}\n\nfunction deleteTime(obj) {\n    var time = obj.parentElement.id;\n    var id = obj.id;\n    var rev = obj.name;\n    obj.parentElement.remove();\n    sendData({\"delete\": time, \"_id\": id, \"_rev\": rev});\n}\n\nfunction sendData(object) {\n    let url = \"https://willmishapp.eu-gb.mybluemix.net/history\";\n\n    let xhr = new XMLHttpRequest();\n    xhr.open(\"POST\", url);\n    \n    xhr.setRequestHeader(\"Accept\", \"application/json\");\n    xhr.setRequestHeader(\"Content-Type\", \"application/json\");\n    \n    xhr.onreadystatechange = function () {\n       if (xhr.readyState === 4) {\n          console.log(xhr.responseText);\n       }};\n    \n    let data = JSON.stringify(object);\n    \n    xhr.send(data);\n}\n\n</script>\n\n</body>\n</html>\n",
-        "x": 1030,
-        "y": 680,
+        "x": 2170,
+        "y": 300,
         "wires": [
             [
                 "d7cf717c7614701a"
@@ -114,11 +114,10 @@
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 490,
-        "y": 720,
+        "x": 1670,
+        "y": 380,
         "wires": [
             [
-                "d935f4b8f31c5228",
                 "6276e757bc9de8f6"
             ]
         ]
@@ -134,11 +133,10 @@
         "search": "_all_",
         "design": "",
         "index": "",
-        "x": 290,
-        "y": 720,
+        "x": 1490,
+        "y": 380,
         "wires": [
             [
-                "0365b428b2be7228",
                 "2ede16ab688c964b"
             ]
         ]
@@ -152,8 +150,8 @@
         "method": "get",
         "upload": false,
         "swaggerDoc": "",
-        "x": 110,
-        "y": 700,
+        "x": 1290,
+        "y": 340,
         "wires": [
             [
                 "e62fce45716c28e9",
@@ -216,8 +214,8 @@
         "method": "post",
         "upload": false,
         "swaggerDoc": "",
-        "x": 110,
-        "y": 900,
+        "x": 1290,
+        "y": 540,
         "wires": [
             [
                 "081c07df56559583",
@@ -234,23 +232,6 @@
         "info": "",
         "x": 680,
         "y": 400,
-        "wires": []
-    },
-    {
-        "id": "0365b428b2be7228",
-        "type": "debug",
-        "z": "d4a9b32e324082e1",
-        "name": "",
-        "active": false,
-        "tosidebar": true,
-        "console": false,
-        "tostatus": false,
-        "complete": "payload[0]",
-        "targetType": "msg",
-        "statusVal": "",
-        "statusType": "auto",
-        "x": 540,
-        "y": 800,
         "wires": []
     },
     {
@@ -276,27 +257,9 @@
         "y": 360,
         "wires": [
             [
-                "cd2239f341d412e8",
-                "196a8ef30b5d5dff"
+                "cd2239f341d412e8"
             ]
         ]
-    },
-    {
-        "id": "d935f4b8f31c5228",
-        "type": "debug",
-        "z": "d4a9b32e324082e1",
-        "name": "",
-        "active": false,
-        "tosidebar": true,
-        "console": false,
-        "tostatus": false,
-        "complete": "true",
-        "targetType": "full",
-        "statusVal": "",
-        "statusType": "auto",
-        "x": 770,
-        "y": 800,
-        "wires": []
     },
     {
         "id": "46b174e2a31a76e4",
@@ -313,42 +276,8 @@
         "qos": "1",
         "name": "IBM IoT",
         "service": "registered",
-        "x": 320,
-        "y": 900,
-        "wires": []
-    },
-    {
-        "id": "d65eb96086ba96e1",
-        "type": "debug",
-        "z": "d4a9b32e324082e1",
-        "name": "device data",
-        "active": false,
-        "tosidebar": true,
-        "console": false,
-        "tostatus": false,
-        "complete": "payload",
-        "targetType": "msg",
-        "statusVal": "",
-        "statusType": "auto",
-        "x": 330,
-        "y": 440,
-        "wires": []
-    },
-    {
-        "id": "196a8ef30b5d5dff",
-        "type": "debug",
-        "z": "d4a9b32e324082e1",
-        "name": "device data",
-        "active": false,
-        "tosidebar": true,
-        "console": false,
-        "tostatus": false,
-        "complete": "payload",
-        "targetType": "msg",
-        "statusVal": "",
-        "statusType": "auto",
-        "x": 1050,
-        "y": 420,
+        "x": 1500,
+        "y": 540,
         "wires": []
     },
     {
@@ -421,8 +350,8 @@
         "checkall": "true",
         "repair": false,
         "outputs": 4,
-        "x": 310,
-        "y": 980,
+        "x": 1490,
+        "y": 620,
         "wires": [
             [
                 "f9573119ffe39fee"
@@ -449,8 +378,8 @@
         "search": "_all_",
         "design": "",
         "index": "",
-        "x": 290,
-        "y": 680,
+        "x": 1490,
+        "y": 300,
         "wires": [
             [
                 "71d20d5a8aab7590"
@@ -467,8 +396,8 @@
         "service": "cool-app-cloudant-1644397982194-95552",
         "payonly": true,
         "operation": "insert",
-        "x": 480,
-        "y": 980,
+        "x": 1700,
+        "y": 640,
         "wires": []
     },
     {
@@ -481,8 +410,8 @@
         "service": "cool-app-cloudant-1644397982194-95552",
         "payonly": false,
         "operation": "delete",
-        "x": 480,
-        "y": 1020,
+        "x": 1700,
+        "y": 680,
         "wires": []
     },
     {
@@ -490,7 +419,7 @@
         "type": "debug",
         "z": "d4a9b32e324082e1",
         "name": "",
-        "active": true,
+        "active": false,
         "tosidebar": true,
         "console": false,
         "tostatus": false,
@@ -498,8 +427,8 @@
         "targetType": "full",
         "statusVal": "",
         "statusType": "auto",
-        "x": 310,
-        "y": 840,
+        "x": 1490,
+        "y": 480,
         "wires": []
     },
     {
@@ -515,8 +444,8 @@
         "targetType": "msg",
         "statusVal": "",
         "statusType": "auto",
-        "x": 1110,
-        "y": 580,
+        "x": 2170,
+        "y": 240,
         "wires": []
     },
     {
@@ -530,12 +459,11 @@
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 570,
-        "y": 680,
+        "x": 1750,
+        "y": 300,
         "wires": [
             [
-                "6276e757bc9de8f6",
-                "916e5be34b432d07"
+                "6276e757bc9de8f6"
             ]
         ]
     },
@@ -559,31 +487,14 @@
         "reduceInit": "",
         "reduceInitType": "num",
         "reduceFixup": "",
-        "x": 870,
-        "y": 680,
+        "x": 2010,
+        "y": 300,
         "wires": [
             [
                 "1b323c2b20dc1c8a",
                 "0de86458b66f5fd9"
             ]
         ]
-    },
-    {
-        "id": "916e5be34b432d07",
-        "type": "debug",
-        "z": "d4a9b32e324082e1",
-        "name": "",
-        "active": false,
-        "tosidebar": true,
-        "console": false,
-        "tostatus": false,
-        "complete": "payload",
-        "targetType": "msg",
-        "statusVal": "",
-        "statusType": "auto",
-        "x": 910,
-        "y": 580,
-        "wires": []
     },
     {
         "id": "f9573119ffe39fee",
@@ -596,8 +507,8 @@
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 580,
-        "y": 900,
+        "x": 1720,
+        "y": 560,
         "wires": [
             []
         ]
@@ -613,8 +524,8 @@
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 570,
-        "y": 940,
+        "x": 1740,
+        "y": 600,
         "wires": [
             []
         ]
@@ -630,8 +541,8 @@
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 530,
-        "y": 1140,
+        "x": 510,
+        "y": 580,
         "wires": [
             [
                 "146ffc5e96c33731",
@@ -651,11 +562,10 @@
         "design": "",
         "index": "",
         "x": 330,
-        "y": 1140,
+        "y": 580,
         "wires": [
             [
-                "4bef76d63dce52d9",
-                "eea483496a045eaa"
+                "4bef76d63dce52d9"
             ]
         ]
     },
@@ -674,18 +584,18 @@
         "qos": "1",
         "name": "IBM IoT",
         "service": "registered",
-        "x": 860,
-        "y": 1140,
+        "x": 720,
+        "y": 580,
         "wires": []
     },
     {
         "id": "9106f43c14eb2c33",
         "type": "comment",
         "z": "d4a9b32e324082e1",
-        "name": "Check time every minute, if it  matches the entry in DB, send a message to dispense food",
+        "name": "Check time every minute, if it  matches an entry in the DB, send a message to dispense food",
         "info": "",
         "x": 360,
-        "y": 1100,
+        "y": 540,
         "wires": []
     },
     {
@@ -700,7 +610,7 @@
         "onceDelay": 0.1,
         "topic": "",
         "x": 140,
-        "y": 1140,
+        "y": 580,
         "wires": [
             [
                 "965a1206df52c1d5"
@@ -720,35 +630,8 @@
         "targetType": "full",
         "statusVal": "",
         "statusType": "auto",
-        "x": 850,
-        "y": 1200,
-        "wires": []
-    },
-    {
-        "id": "eea483496a045eaa",
-        "type": "debug",
-        "z": "d4a9b32e324082e1",
-        "name": "",
-        "active": false,
-        "tosidebar": true,
-        "console": false,
-        "tostatus": false,
-        "complete": "payload[0]",
-        "targetType": "msg",
-        "statusVal": "",
-        "statusType": "auto",
-        "x": 620,
-        "y": 1300,
-        "wires": []
-    },
-    {
-        "id": "3ecd68a8f75981b0",
-        "type": "comment",
-        "z": "d4a9b32e324082e1",
-        "name": "TODO: Conveert to JSON (stringify) and send message to dispense food",
-        "info": "",
-        "x": 780,
-        "y": 1060,
+        "x": 710,
+        "y": 640,
         "wires": []
     },
     {
@@ -756,7 +639,7 @@
         "type": "debug",
         "z": "d4a9b32e324082e1",
         "name": "device data",
-        "active": true,
+        "active": false,
         "tosidebar": true,
         "console": false,
         "tostatus": false,
@@ -764,8 +647,18 @@
         "targetType": "msg",
         "statusVal": "",
         "statusType": "auto",
-        "x": 770,
-        "y": 260,
+        "x": 710,
+        "y": 280,
+        "wires": []
+    },
+    {
+        "id": "7b0efb3fc26b1996",
+        "type": "comment",
+        "z": "d4a9b32e324082e1",
+        "name": "Update heater_status and pump_status flow variables",
+        "info": "",
+        "x": 620,
+        "y": 240,
         "wires": []
     },
     {
